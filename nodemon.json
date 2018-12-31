@@ -1,0 +1,11 @@
+{
+    "verbose": false,
+    "delay": "300000",
+    "ignore": [
+        "logs/*",
+        "public/*",
+        "views/*",
+        "configs/*",
+        "data/*.json"
+    ]
+}

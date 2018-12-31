@@ -1,0 +1,11 @@
+{
+    "mongoose": {
+        "hostm": "",
+        "user": "",
+        "password": "",
+        "db": ""
+    },
+    "logger": "info",
+    "maxCPUs": 4,
+    "port": "3000"
+}

@@ -1,0 +1,37 @@
+{
+    "enabled": [
+        "tf",
+        "dotapt",
+        "portal",
+        "dota",
+        "artifact"
+    ],
+    "aliases": [
+        "tf",
+        "dota",
+        "dotapt",
+        "portal",
+        "artifact"
+    ],
+    "name": {
+        "tf": "Team Fortress Wiki",
+        "dota": "Dota 2 Wiki",
+        "dotapt": "Dota 2 Wiki (PT)",
+        "portal": "The Portal Wiki",
+        "artifact": "Artifact Wiki"
+    },
+    "creation": {
+        "tf": "2010-06-01",
+        "dota": "2011-11-03",
+        "dotapt": "2017-01-24",
+        "portal": "2011-04-20",
+        "artifact": "2017-08-09"
+    },
+    "url": {
+        "tf": "https://wiki.teamfortress.com",
+        "dota": "https://dota2.gamepedia.com",
+        "dotapt": "https://dota2-pt.gamepedia.com",
+        "portal": "https://theportalwiki.com",
+        "artifact": "https://artifact.gamepedia.com"
+    }
+}

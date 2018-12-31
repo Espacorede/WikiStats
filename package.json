@@ -1,0 +1,36 @@
+{
+  "name": "wikistats",
+  "version": "1.0.0",
+  "description": "OTFWiki Stats",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon ./bin/www"
+  },
+  "contributors": [
+    {
+      "name": "Luís",
+      "email": "luis@espacore.de"
+    },
+    {
+      "name": "Gabriel",
+      "email": "gabriel@espacore.de"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cachegoose": "^7.1.0",
+    "consolidate": "^0.15.1",
+    "express": "^4.16.4",
+    "moment": "^2.22.2",
+    "mongoose": "^5.3.10",
+    "mustache": "^2.3.1",
+    "nodemon": "^1.18.7",
+    "nodemw": "^0.12.2",
+    "socket.io": "^2.1.1",
+    "socket.io-client": "^2.1.1",
+    "tabletojson": "^0.9.8",
+    "winston": "^3.1.0",
+    "worker-nodes": "^1.6.1"
+  }
+}

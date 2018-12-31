@@ -1,0 +1,64 @@
+<header class="mui-appbar mui--z1">
+    <div class="mui-container">
+        <table>
+            <tr class="mui--appbar-height">
+                <td class="mui--text-left">
+                    <ul class="mui-list--inline mui--text-body2">
+                        <li>
+                            <a href="/" class="mui--text-title header-link">Home</a>
+                        </li>
+                        {{ #wAlias }}
+                        <li>
+                            &middot;
+                        </li>
+                        <li>
+                            <a href="/{{ wAlias }}/wiki" class="mui--text-title header-link">Wiki</a>
+                        </li>
+                        <li>
+                            &middot;
+                        </li>
+                        <li>
+                            <a href="/{{ wAlias }}/lists" class="mui--text-title header-link">Lists</a>
+                        </li>
+                        {{ /wAlias }}
+                    </ul>
+                </td>
+
+                <td class="mui--text-right">
+                    <ul class="mui-list--inline mui--text-body2">
+                        {{ ^pWikis }}
+                        <li>
+                            <div class="mui-textfield">
+                                <input type="text" id="userBig" placeholder="Search user...">
+                            </div>
+                        </li>
+                        <li>
+                            <button class="mui-btn mui-btn--flat header-search-button" onclick="javascript:searchUser('userBig');">
+                                Search
+                            </button>
+                        </li>
+                        <li>
+                            &middot;
+                        </li>{{ /pWikis }}
+                        <li>
+                            <a href="/about" class="mui--text-title header-link">About</a>
+                        </li>
+                    </ul>
+                </td>
+        </table>
+    </div>
+</header>
+
+<div class="mui-container mui--z1 header-notice">
+    <noscript>
+        <p class="mui--text-headline">Spy's sappin' my wiki!
+            <img src="/public/images/red-tape.png">
+        </p>
+        <p class="mui--text-subhead">For full functionality of this site it is necessary to enable JavaScript. Here are
+            the
+            <a rel="noopener noreferrer" href="https://www.enable-javascript.com/" target="_blank">
+                instructions how to enable JavaScript in your web browser</a>.</p>
+    </noscript>
+</div>
+
+<div class="header-separator"></div>

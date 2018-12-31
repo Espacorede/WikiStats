@@ -1,0 +1,52 @@
+/* Fundos */
+
+.mui-appbar,
+footer {
+    background-color: #F3A957 !important;
+}
+
+/* Tooltip e botões */
+
+button {
+    color: white !important;
+    background-color: #D77030 !important;
+}
+
+button:hover {
+    background-color: #d26e30 !important;
+}
+
+input:focus {
+    border-color: #D77030 !important;
+}
+
+/* Cores */
+
+.user-bot {
+    /* color: #FE48AA; */
+    background-color: #FE48AA;
+    color: white;
+}
+
+.user-valve {
+    background-color: #f74843;
+    color: white;
+}
+
+.user-staff {
+    /* color: #db9c1f */
+    background-color: #db9c1f;
+    color: white;
+}
+
+.user-normal {
+    color: #3F56AD;
+    /* background-color: #3F56AD;*/
+    /* color: white;*/
+}
+
+.user-wikicap {
+    /* color: #A62A2A; */
+    background-color: #1f62db;
+    color: white;
+}

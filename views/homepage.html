@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="Description" content="Wiki Stats: User statistics for Valve games wikis.">
+    <meta property="og:title" content="Wiki Stats &mdash; Main Page">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:description" content="Wiki Stats: User statistics for Valve games wikis.">
+    <link rel="shortcut icon" href="/public/images/favicon-tf.ico">
+    <link href="/public/css/mui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/public/css/main.css" rel="stylesheet" type="text/css" />
+    <script src="/public/javascript/main.js" type="text/javascript"></script>
+    <title>Wiki Stats &mdash; Welcome!</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="mui-container">
+
+        <div class="mui--appbar-height"></div>
+
+        <div class="mui-row mui--text-center">
+            <div class="mui-col-md-12">
+                <div class="mui--text-display3">
+                    Wiki Stats
+                </div>
+
+                <div class="mui--text-header">
+                    Analysis of <span>{{ mUsers }}</span> users on <span>{{ mWikis }}</span> wikis
+                </div>
+            </div>
+        </div>
+
+        <div class="mui--appbar-height"></div>
+
+        <div class="mui-row mui--text-center">
+            <div class="mui-col-md-12">
+                <div class="mui--text-title">Pick your wiki:</div>
+
+                <br>
+
+                <div id="homepage-links">
+                    <div class="mui-row mui--align-middle mui--text-center">
+                        <table width="100%">
+                            <tr style="height: 25px;">
+                                {{ #pWikis }}
+                                <td class="mui--align-middle">
+                                    <img class="wiki-icon" src="/public/images/logo-{{ path }}.png">
+
+                                    <a href="/{{ path }}/wiki" class="wiki-link">
+                                        <b>{{name}}</b>
+                                    </a>
+                                </td>
+                                {{ /pWikis }}
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+</body>
+
+</html>

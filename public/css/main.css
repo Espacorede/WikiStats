@@ -1,0 +1,220 @@
+/* Header */
+
+header {
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 2;
+}
+
+header ul.mui-list--inline {
+    margin-bottom: 0;
+}
+
+header a {
+    color: white;
+    vertical-align: middle;
+}
+
+header table {
+    width: 100%;
+}
+
+.header-separator {
+    margin-top: 1%;
+}
+
+#userBig {
+    color: white !important;
+}
+
+/* Avisos */
+
+.header-notice {
+    background-color: #ee6e73;
+    color: white
+}
+
+.header-notice a {
+    color: #2b2b2b;
+    text-decoration: none;
+}
+
+.header-notice a:hover {
+    color: #2b2b2bd6;
+}
+
+.header-notice>noscript>p.mui--text-headline {
+    margin-top: 1%
+}
+
+.header-notice button,
+.header-notice button:hover,
+.header-notice button:visited {
+    color: white;
+}
+
+.notice-cache-image {
+    width: 25px;
+    vertical-align: middle;
+}
+
+#cache-plsdont {
+    background-color: #a00e0e94 !important
+}
+
+#notice-cache {
+    display: none;
+}
+
+/* Homepage */
+
+#homepage-links {
+    margin: 0 auto;
+    font-size: 16px;
+}
+
+.wiki-icon {
+    width: 2em;
+    height: 2em;
+}
+
+#homepage-links b {
+    vertical-align: 50%;
+}
+
+/* Listas */
+
+thead tr th:not(.sorttable_nosort) {
+    cursor: pointer;
+}
+
+.list-curlist {
+    padding: 15px;
+    float: left;
+}
+
+.list-user-active {
+    color: green;
+}
+
+.list-user-inactive {
+    color: red;
+}
+
+/* Erro */
+
+.error-title {
+    margin-top: 2%;
+}
+
+.error-message {
+    margin-top: 1%;
+}
+
+.error-goback {
+    margin-top: 2%;
+    font-size: 150%;
+}
+
+/* Tooltip e botões */
+
+input {
+    color: black !important;
+}
+
+.tooltip {
+    border-bottom: 1px dotted;
+}
+
+/* Página principal */
+
+.wlogo {
+    width: 15%;
+    /* Edge*/
+    margin: 0 auto;
+}
+
+.otfwlogo {
+    display: none;
+    width: 15%;
+    animation: spin 20s linear infinite;
+    /* Edge*/
+    margin: 0 auto;
+}
+
+.otfwlogo.active:hover {
+    animation: spin 1s linear infinite;
+}
+
+.otfwlogo.active {
+    display: unset;
+    animation: spin 20s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Fontes */
+
+body {
+    font-size: 16px;
+}
+
+.user-normal,
+.user-bot,
+.user-wikicap,
+.user-valve,
+.user-staff,
+.user-staff-former,
+.user-curse {
+    font-weight: 200;
+    padding: 3px 3px 3px 3px;
+}
+
+/* Cores */
+
+body {
+    background-color: #eeeeee;
+}
+
+/* Preloader */
+
+#preloader.partial {
+    margin-top: 15%;
+}
+
+/* Página "compare" */
+
+.compare-main,
+#main-updating {
+    color: #d84931;
+}
+
+.compare-target,
+#target-updating {
+    color: #04749e;
+}
+
+.list-truncate {
+    width: 250px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Footer */
+
+footer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 1rem;
+    text-align: center;
+}

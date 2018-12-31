@@ -1,0 +1,10 @@
+node_modules/*
+
+*.log
+
+data/*.json
+data/**/*.json
+
+data/lists/*-active.json
+data/lists/*-top100.json
+data/lists/*-wikicap.json

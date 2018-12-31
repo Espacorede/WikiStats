@@ -1,0 +1,51 @@
+/* Fundos */
+
+.mui-appbar,
+footer {
+    background-color: #B44335 !important;
+}
+
+/* Tooltip e botões */
+
+button {
+    color: white;
+    background-color: #a53d31 !important;
+}
+
+button:hover {
+    background-color: #96372d !important;
+}
+
+input:focus {
+    border-color: #a53d31 !important;
+}
+
+/* Cores */
+
+#userBig::placeholder {
+    color: rgba(255,255,255,.26) !important;
+}
+
+header>div>table>tbody>tr>td.mui--text-right>ul>li:nth-child(2)>button,
+#user-content-top>div.mui--text-right>button {
+    color: whitesmoke !important;
+}
+
+.user-bot {
+    background-color: #FE48AA;
+    color: white;
+}
+
+.user-staff {
+    background-color: #52D017;
+    color: white;
+}
+
+.user-curse {
+    background-color: #f26122;
+    color: white;
+}
+
+.user-normal {
+    color: #3F56AD;
+}
