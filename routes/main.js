@@ -12,7 +12,7 @@ const wikis = require("../configs/wikis/wikis.json");
 const utils = require("../scripts/utils");
 const router = express.Router();
 
-db.on("error", function (err) {
+db.on("error", (err) => {
     if (err) {
         logger.mongooseerror(`Failed to connect to MongoDB: ${err}`);
     }
@@ -252,7 +252,7 @@ router.get("/:wiki/lists", (req, res) => {
 
     let lists = [];
 
-    dataFiles.forEach(function (file) {
+    dataFiles.forEach((file) => {
         if (file.includes(currentWiki)) {
             if (require(`../data/lists/${file}`)["users"][0]) {
                 lists.push({
@@ -392,7 +392,7 @@ router.get("/:wiki/list/:list", (req, res) => {
 // Other
 
 router.get("/about", (req, res) => {
-    userModel.find({}, "u_name u_edits", function (err, data) {
+    userModel.find({}, "u_name u_edits", (err, data) => {
         if (err) {
             logger.mongooseerror(`Failed to retrieve users from database (/about): ${err}`);
             utils.renderInternalErrorPage(res);

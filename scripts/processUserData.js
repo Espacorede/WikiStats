@@ -160,7 +160,7 @@ module.exports.processUser = (data) => {
                 }
 
                 if (!longestStreak.end || !longestStreak.start ||
-               streakIsLongest()) {
+                    streakIsLongest()) {
                     longestStreak = Object.assign({}, streak);
                 }
             }
@@ -258,7 +258,7 @@ module.exports.processUser = (data) => {
 
         let wikiConfig = require(`../configs/wikis/${data.u_sourcewiki}-config.json`);
         let wikiUrl = `https://${wikiConfig["server"]}`;
-        let wikiPath = `${wikiUrl}${wikiConfig["path"]}`;
+        let wikiPath = `${wikiUrl}${wikiConfig["path"] === "/w" ? "/w/" : wikiConfig["path"]}`;
         let oddPath = data.u_sourcewiki === "tf" || data.u_sourcewiki === "portal" ? "wiki/" : "";
         let encodedUsername = encodeURIComponent(data.u_name);
         let isExpensive = userEdits > 10000;
