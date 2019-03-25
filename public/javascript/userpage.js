@@ -177,6 +177,14 @@ socketio.on(selectedUser, (message) => {
         document.getElementById("user-block-count").innerText = data.uBlockCount;
         document.getElementById("user-delete-count").innerText = data.uDeleteCount;
 
+        // Funciona, mas o certo seria fazer isso automaticamente no futuro
+        // Isso permitiria que mais estatísitcas de extensões fossem facilmente adicionadas
+        if (selectedWiki === "tf") {
+            document.getElementById("wiki-has-thanks").removeAttribute("class");
+            document.getElementById("user-thanks-given").innerText = data.uThanksGiven;
+            document.getElementById("user-thanks-received").innerText = data.uThanksReceived;
+        }
+
         if (data.uHasRights) {
             document.getElementById("user-has-rights").removeAttribute("class");
         }
@@ -246,8 +254,7 @@ socketio.on(selectedUser, (message) => {
 
         if (data.uStreakCountCurrent === "1") {
             currentStreakPlural.innerText = "";
-        }
-        else {
+        } else {
             currentStreakPlural.innerText = "s";
         }
 
@@ -255,8 +262,7 @@ socketio.on(selectedUser, (message) => {
             if (data.uStreak.start === data.uStreakCurrent.start &&
                 data.uStreak.end === data.uStreakCurrent.end) {
                 document.getElementById("user-streak-count-b").setAttribute("title", "Since " + formatStreak(data.uStreak.start));
-            }
-            else {
+            } else {
                 document.getElementById("user-streak-count-b").setAttribute("title", formatStreak(data.uStreak.start) + " - " + formatStreak(data.uStreak.end));
             }
             document.getElementById("user-streak-count-b").setAttribute("class", "tooltip");
@@ -268,8 +274,7 @@ socketio.on(selectedUser, (message) => {
 
         if (data.uStreakCount === "1") {
             streakPlural.innerText = "";
-        }
-        else {
+        } else {
             streakPlural.innerText = "s";
         }
 
@@ -305,7 +310,9 @@ socketio.on(selectedUser, (message) => {
 });
 
 function loadCharts() {
-    google.charts.load("current", { "packages": ["corechart"] });
+    google.charts.load("current", {
+        "packages": ["corechart"]
+    });
     google.charts.setOnLoadCallback(drawYearSelection);
     google.charts.setOnLoadCallback(drawNamespacesChart);
     google.charts.setOnLoadCallback(drawHourChart);
@@ -341,11 +348,13 @@ let selectedMonth;
 
 const months = ["Jan", "Feb", "Mar", "Apr",
     "May", "Jun", "Jul", "Aug",
-    "Sept", "Oct", "Nov", "Dec"];
+    "Sept", "Oct", "Nov", "Dec"
+];
 
 const fullMonths = ["January", "February", "March", "April",
     "May", "June", "July", "August",
-    "September", "October", "November", "December"];
+    "September", "October", "November", "December"
+];
 
 function drawYearSelection() {
     document.getElementById("timeline-select-year").innerHTML = "";
@@ -463,7 +472,13 @@ function drawOverallTimelineChart(year) {
     let chartData = new google.visualization.DataTable();
     chartData.addColumn("string", "Month");
     chartData.addColumn("number", "Edits");
-    chartData.addColumn({ type: "string", role: "tooltip", "p": { "html": true } });
+    chartData.addColumn({
+        type: "string",
+        role: "tooltip",
+        "p": {
+            "html": true
+        }
+    });
 
     let monthEdits = contributionsByYearAndMonth[year];
 
@@ -476,12 +491,24 @@ function drawOverallTimelineChart(year) {
     const vAxisTicks = calculateChartTicks(Math.max(...monthEdits));
 
     const chartOptions = {
-        tooltip: { trigger: "both", isHtml: true, ignoreBounds: false },
-        vAxis: { title: "Edits", minValue: 0, ticks: vAxisTicks },
-        legend: { position: "none" },
+        tooltip: {
+            trigger: "both",
+            isHtml: true,
+            ignoreBounds: false
+        },
+        vAxis: {
+            title: "Edits",
+            minValue: 0,
+            ticks: vAxisTicks
+        },
+        legend: {
+            position: "none"
+        },
         colors: ["rgb(179, 82, 21)"],
         backgroundColor: "#eeeeee",
-        chartArea: { top: 30 },
+        chartArea: {
+            top: 30
+        },
         width: "100%",
         height: 400
     };
@@ -498,7 +525,13 @@ function drawMonthTimelineChart(month) {
     let chartData = new google.visualization.DataTable();
     chartData.addColumn("string", "Date");
     chartData.addColumn("number", "Edits");
-    chartData.addColumn({ type: "string", role: "tooltip", "p": { "html": true } });
+    chartData.addColumn({
+        type: "string",
+        role: "tooltip",
+        "p": {
+            "html": true
+        }
+    });
 
     let year = contributionsByDay[selectedYear][month];
 
@@ -535,10 +568,24 @@ function drawMonthTimelineChart(month) {
     }
 
     const chartOptions = {
-        tooltip: { trigger: "both", isHtml: true, ignoreBounds: false },
-        legend: { position: "none" },
-        hAxis: { textStyle: { fontSize: fontSize } },
-        vAxis: { title: "Edits", minValue: 0, ticks: vAxisTicks },
+        tooltip: {
+            trigger: "both",
+            isHtml: true,
+            ignoreBounds: false
+        },
+        legend: {
+            position: "none"
+        },
+        hAxis: {
+            textStyle: {
+                fontSize: fontSize
+            }
+        },
+        vAxis: {
+            title: "Edits",
+            minValue: 0,
+            ticks: vAxisTicks
+        },
         colors: ["rgb(179, 82, 21)"],
         backgroundColor: "#eeeeee",
         width: "100%",
@@ -563,12 +610,16 @@ function drawNamespacesChart() {
         for (let namespace in namespaceEdits) {
             namespaceTuples.push([namespace, namespaceEdits[namespace]]);
         }
-        namespaceTuples.sort((a,b) => b[1] - a[1]);
+        namespaceTuples.sort((a, b) => b[1] - a[1]);
 
         chartData.addRows(namespaceTuples);
 
         const chartOptions = {
-            tooltip: { trigger: "both", isHtml: true, ignoreBounds: false },
+            tooltip: {
+                trigger: "both",
+                isHtml: true,
+                ignoreBounds: false
+            },
             backgroundColor: "#eeeeee",
             sliceVisibilityThreshold: 0,
             width: "100%",
@@ -622,11 +673,23 @@ function drawHourChart() {
     const vAxisTicks = calculateChartTicks(Math.max(...contributionsByHour));
 
     const chartOptions = {
-        tooltip: { trigger: "both", isHtml: true, ignoreBounds: false },
-        vAxis: { title: "Edits", minValue: 0, ticks: vAxisTicks },
-        legend: { position: "none" },
+        tooltip: {
+            trigger: "both",
+            isHtml: true,
+            ignoreBounds: false
+        },
+        vAxis: {
+            title: "Edits",
+            minValue: 0,
+            ticks: vAxisTicks
+        },
+        legend: {
+            position: "none"
+        },
         colors: ["rgb(179, 82, 21)"],
-        chartArea: { top: 30 },
+        chartArea: {
+            top: 30
+        },
         backgroundColor: "#eeeeee",
         width: "50%",
         height: 300
@@ -652,7 +715,13 @@ function drawWeekChart() {
     let chartData = new google.visualization.DataTable();
     chartData.addColumn("string", "Hour");
     chartData.addColumn("number", "Edits");
-    chartData.addColumn({ type: "string", role: "tooltip", "p": { "html": true } });
+    chartData.addColumn({
+        type: "string",
+        role: "tooltip",
+        "p": {
+            "html": true
+        }
+    });
 
     for (let i = 0; i < 7; i += 1) {
         const tooltipText = buildTooltip(fullDays[i],
@@ -663,11 +732,23 @@ function drawWeekChart() {
     const vAxisTicks = calculateChartTicks(Math.max(...contributionsByWeekDay));
 
     const chartOptions = {
-        tooltip: { trigger: "both", isHtml: true, ignoreBounds: false },
-        vAxis: { title: "Edits", minValue: 0, ticks: vAxisTicks },
-        legend: { position: "none" },
+        tooltip: {
+            trigger: "both",
+            isHtml: true,
+            ignoreBounds: false
+        },
+        vAxis: {
+            title: "Edits",
+            minValue: 0,
+            ticks: vAxisTicks
+        },
+        legend: {
+            position: "none"
+        },
         colors: ["rgb(179, 82, 21)"],
-        chartArea: { top: 30 },
+        chartArea: {
+            top: 30
+        },
         backgroundColor: "#eeeeee",
         width: "50%",
         height: 300
@@ -724,7 +805,11 @@ function drawWeekAndHourChart(day) {
     const vAxisTicks = calculateChartTicks(Math.max(...hourEdits));
 
     const chartOptions = {
-        tooltip: { trigger: "both", isHtml: true, ignoreBounds: false },
+        tooltip: {
+            trigger: "both",
+            isHtml: true,
+            ignoreBounds: false
+        },
         vAxis: {
             title: "Edits",
             viewWindowMode: "explicit",
@@ -734,11 +819,15 @@ function drawWeekAndHourChart(day) {
             minValue: 0,
             ticks: vAxisTicks
         },
-        legend: { position: "none" },
+        legend: {
+            position: "none"
+        },
         colors: ["rgb(179, 82, 21)"],
         backgroundColor: "#eeeeee",
         height: 300,
-        chartArea: { top: 30 }
+        chartArea: {
+            top: 30
+        }
     };
 
     let chart = new google.visualization.ColumnChart(document.getElementById("edits-wh"));
@@ -752,7 +841,13 @@ function drawMonthChart() {
     let chartData = new google.visualization.DataTable();
     chartData.addColumn("string", "Month");
     chartData.addColumn("number", "Edits");
-    chartData.addColumn({ type: "string", role: "tooltip", "p": { "html": true } });
+    chartData.addColumn({
+        type: "string",
+        role: "tooltip",
+        "p": {
+            "html": true
+        }
+    });
 
     for (let i = 0; i < 12; i += 1) {
         const tooltipText = buildTooltip(fullMonths[i],
@@ -763,12 +858,24 @@ function drawMonthChart() {
     const vAxisTicks = calculateChartTicks(Math.max(...contributionsByMonth));
 
     const chartOptions = {
-        tooltip: { trigger: "both", isHtml: true, ignoreBounds: false },
-        vAxis: { title: "Edits", minValue: 0, ticks: vAxisTicks },
-        legend: { position: "none" },
+        tooltip: {
+            trigger: "both",
+            isHtml: true,
+            ignoreBounds: false
+        },
+        vAxis: {
+            title: "Edits",
+            minValue: 0,
+            ticks: vAxisTicks
+        },
+        legend: {
+            position: "none"
+        },
         colors: ["rgb(179, 82, 21)"],
         backgroundColor: "#eeeeee",
-        chartArea: { top: 30 },
+        chartArea: {
+            top: 30
+        },
         width: "50%",
         height: 300
     };
@@ -806,7 +913,11 @@ function drawYearChart() {
     const vAxisTicks = calculateChartTicks(Math.max(...contributionsByYear));
 
     const chartOptions = {
-        tooltip: { trigger: "both", isHtml: true, ignoreBounds: false },
+        tooltip: {
+            trigger: "both",
+            isHtml: true,
+            ignoreBounds: false
+        },
         vAxis: {
             title: "Edits",
             viewWindowMode: "explicit",
@@ -816,10 +927,14 @@ function drawYearChart() {
             minValue: 0,
             ticks: vAxisTicks
         },
-        legend: { position: "none" },
+        legend: {
+            position: "none"
+        },
         colors: ["rgb(179, 82, 21)"],
         backgroundColor: "#eeeeee",
-        chartArea: { top: 30 },
+        chartArea: {
+            top: 30
+        },
         width: "50%",
         height: 300
     };

@@ -5,17 +5,21 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
     <meta name="Description" content="Wiki Stats: User statistics for {{ wName }}">
     <meta property="og:title" content="Wiki Stats &mdash; {{ wName}}">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://wiki.tarkoviski.me/{{ wAlias }}/wiki">
     <meta property="og:description" content="Wiki Stats: User statistics for {{ wName }}">
-    <link rel="shortcut icon" href="/public/images/favicon-{{ wAlias }}.ico">
-    <link href="/public/css/mui.min.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/main.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
-    <script src="/public/javascript/main.js" type="text/javascript"></script>
-    <title>Wiki Stats &mdash; {{ wName }}</title>
+    {{ #wFavicon }}
+    <link rel="shortcut icon" href="{{{ wFavicon }}}">
+    {{ /wFavicon }}
+    <link href="/css/third_party/mui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/css/main.css" rel="stylesheet" type="text/css" />
+    {{ #wCSS }}
+    <link href="{{{ wCSS }}}" rel="stylesheet" type="text/css" />
+    {{ /wCSS }}
+    <script src="/javascript/main.js" type="text/javascript"></script>
+    <title>{{ wName }} - Wiki Stats</title>
 </head>
 
 <body>
@@ -29,11 +33,9 @@
         <div class="mui-row mui--text-center">
             <div class="mui-col-md-12">
                 {{ #wIsDefault }}
-                    <img class="otfwlogo active" id="cross" onclick="javascript:logoSwitch(this, true);" src="/public/images/logo-tf.png">
-                    <img class="otfwlogo" id="cross-o" onclick="javascript:logoSwitch(this);" src="/public/images/logo-tf-orange.png">
-                {{ /wIsDefault }}
+                    <img class="otfwlogo otfwlogoslow active" id="cross" onclick="javascript:logoSwitch(this, true);" src="/images/wikis/logo-tf.png" title="{{ wName }}">                {{ /wIsDefault }}
                 {{ ^wIsDefault }}
-                    <img class="wlogo" src="/public/images/logo-{{ wAlias }}.png">
+                    <img class="wlogo" src="{{{ wLogo }}}" title="{{ wName }}">
                 {{ /wIsDefault }}
             </div>
         </div>
@@ -53,7 +55,7 @@
             </div>
 
             <div class="mui-row mui-col-md-offset-4">
-                <div class="mui-col-md-12">Images:
+                <div class="mui-col-md-12">Files:
                     <b>{{ wImages }}</b>
                 </div>
             </div>

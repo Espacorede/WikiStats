@@ -49,12 +49,6 @@ wikis["enabled"].forEach(function (wiki) {
         shouldPopulateLists = !shouldPopulateLists ? false : true;
     }
 
-    if (!fs.existsSync(`./public/css/${wiki}.css`)) {
-        logger.info(`${wiki}: Creating public/css/${wiki}.css`);
-        fs.writeFileSync(`./public/css/${wiki}.css`, "", null, 2);
-        shouldPopulateLists = !shouldPopulateLists ? false : true;
-    }
-
     if (!fs.existsSync(`./data/namespaces/${wiki}.json`)) {
         updateNameSpaces(wiki);
     }

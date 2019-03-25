@@ -38,7 +38,8 @@ router.get("/", (req, res) => {
         wikis["enabled"].forEach(wiki => {
             let newWiki = {
                 path: wiki,
-                name: wikis.name[wiki]
+                name: wikis.name[wiki],
+                logo: wikis.files.logo[wiki]
             };
             availableWikis.push(newWiki);
         });
@@ -62,7 +63,9 @@ router.get("/:wiki/wiki", (req, res) => {
     let currentWiki = req.params.wiki;
 
     if (wikis["enabled"].includes(currentWiki)) {
-        wikiModel.find({ alias: currentWiki }).cache(0, `${currentWiki}-wikidata`).exec((err, data) => {
+        wikiModel.find({
+            alias: currentWiki
+        }).cache(0, `${currentWiki}-wikidata`).exec((err, data) => {
             if (err) {
                 logger.mongooseerror(`${currentWiki}: Failed to retrieve wiki data from database (/): ${err}`);
                 utils.renderInternalErrorPage(res);
@@ -93,6 +96,9 @@ router.get("/:wiki/wiki", (req, res) => {
                 wCreatedAgo: wikiData.w_age,
                 wIsDefault: currentWiki === "tf" ? true : false,
                 wAlias: currentWiki,
+                wCSS: wikis["files"]["css"][currentWiki],
+                wLogo: wikis["files"]["logo"][currentWiki],
+                wFavicon: wikis["files"]["favicon"][currentWiki],
                 partials: {
                     header: "common/header"
                 }
@@ -116,7 +122,10 @@ router.get("/:wiki/user/:user", (req, res) => {
 
     let user = utils.returnCleanUsername(req.params.user);
 
-    userModel.find({ u_sourcewiki: currentWiki, u_name: user }).cache(0, `${currentWiki}user-${user}`).exec((err, data) => {
+    userModel.find({
+        u_sourcewiki: currentWiki,
+        u_name: user
+    }).cache(0, `${currentWiki}user-${user}`).exec((err, data) => {
         if (err) {
             logger.mongooseerror(`Failed to search for "${user}" in the database (/user): ${err}`);
             utils.renderInternalErrorPage(res);
@@ -131,6 +140,9 @@ router.get("/:wiki/user/:user", (req, res) => {
                 wName: wikis["name"][currentWiki],
                 wAlias: currentWiki,
                 wIsDefault: currentWiki === "tf" ? true : false,
+                wCSS: wikis["files"]["css"][currentWiki],
+                wLogo: wikis["files"]["logo"][currentWiki],
+                wFavicon: wikis["files"]["favicon"][currentWiki],
                 partials: {
                     header: "common/header"
                 }
@@ -149,6 +161,9 @@ router.get("/:wiki/user/:user", (req, res) => {
             wName: wikis["name"][currentWiki],
             wAlias: currentWiki,
             wIsDefault: currentWiki === "tf" ? true : false,
+            wCSS: wikis["files"]["css"][currentWiki],
+            wLogo: wikis["files"]["logo"][currentWiki],
+            wFavicon: wikis["files"]["favicon"][currentWiki],
             partials: {
                 header: "common/header"
             }
@@ -172,7 +187,9 @@ router.get("/:wiki/user/:user/compare", async (req, res) => {
     getUser(mainUser);
 
     function getUser(name, isMain = true) {
-        userModel.find({ u_name: name }).exec((err, data) => {
+        userModel.find({
+            u_name: name
+        }).exec((err, data) => {
             if (err) {
                 logger.mongooseerror(`Failed to search for "${name}" in the database (/user/compare): ${err}`);
                 utils.renderInternalErrorPage(res);
@@ -232,6 +249,9 @@ router.get("/:wiki/user/:user/compare", async (req, res) => {
             wName: wikis["name"][currentWiki],
             wAlias: currentWiki,
             wIsDefault: currentWiki === "tf" ? true : false,
+            wCSS: wikis["files"]["css"][currentWiki],
+            wLogo: wikis["files"]["logo"][currentWiki],
+            wFavicon: wikis["files"]["favicon"][currentWiki],
             partials: {
                 header: "common/header"
             }
@@ -265,7 +285,11 @@ router.get("/:wiki/lists", (req, res) => {
 
     res.render("lists.html", {
         wAlias: currentWiki,
+        wName: wikis["name"][currentWiki],
         wLists: lists,
+        wCSS: wikis["files"]["css"][currentWiki],
+        wLogo: wikis["files"]["logo"][currentWiki],
+        wFavicon: wikis["files"]["favicon"][currentWiki],
         partials: {
             header: "common/header"
         }
@@ -316,7 +340,9 @@ router.get("/:wiki/list/:list", (req, res) => {
     let listFileSelected = require(`../data/lists/${currentWiki}-${selectedList}.json`);
     let listFileStaff = require(`../data/lists/${currentWiki}-staff.json`);
 
-    userModel.find({ "u_sourcewiki": currentWiki }, "u_name u_edits u_registration", (err, data) => {
+    userModel.find({
+        "u_sourcewiki": currentWiki
+    }, "u_name u_edits u_registration", (err, data) => {
         if (err) {
             logger.mongooseerror(`${currentWiki} Failed to retrieve users from database (list/${selectedList}): ${err}`);
             utils.renderInternalErrorPage(res);
@@ -376,6 +402,10 @@ router.get("/:wiki/list/:list", (req, res) => {
         res.render("listpage.html", {
             rUsers: users,
             wAlias: currentWiki,
+            wName: wikis["name"][currentWiki],
+            wCSS: wikis["files"]["css"][currentWiki],
+            wLogo: wikis["files"]["logo"][currentWiki],
+            wFavicon: wikis["files"]["favicon"][currentWiki],
             wWikiCap: wikiCap,
             wWikiCapList: selectedList === "wikicap",
             wTop100List: selectedList === "top100",

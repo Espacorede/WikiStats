@@ -138,18 +138,20 @@ input {
 .otfwlogo {
     display: none;
     width: 15%;
-    animation: spin 20s linear infinite;
     /* Edge*/
     margin: 0 auto;
 }
 
-.otfwlogo.active:hover {
-    animation: spin 1s linear infinite;
+.otfwlogoslow {
+    animation: spin 20s linear infinite;
+}
+
+.otfwlogofast {
+    animation: spin 1s linear infinite !important;
 }
 
 .otfwlogo.active {
     display: unset;
-    animation: spin 20s linear infinite;
 }
 
 @keyframes spin {

@@ -5,16 +5,19 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
-    <link rel="shortcut icon" href="/public/images/favicon-{{ wAlias }}.ico">
-    <link href="/public/css/mui.min.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/main.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/user.css" rel="stylesheet" type="text/css" />
-    <script src="/public/javascript/main.js"></script>
+    {{ #wFavicon }}
+    <link rel="shortcut icon" href="{{{ wFavicon }}}">
+    {{ /wFavicon }}
+    <link href="/css/third_party/mui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/css/main.css" rel="stylesheet" type="text/css" />
+    {{ #wCSS }}
+    <link href="{{{ wCSS }}}" rel="stylesheet" type="text/css" />
+    {{ /wCSS }}
+    <link href="/css/user.css" rel="stylesheet" type="text/css" />
+    <script src="/javascript/main.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/public/javascript/compare.js" defer></script>
-    <title>Wiki Stats &mdash; {{ main}} / Compare &mdash; {{ wName }}</title>
+    <script src="/javascript/compare.js" defer></script>
+    <title>{{ main}} / Compare - {{ wName }} | Wiki Stats</title>
 </head>
 
 <body>
@@ -178,10 +181,10 @@
             <div class="mui-row mui--text-center">
                 <div class="mui-col-md-12">
                     {{ #wIsDefault }}
-                        <img class="otfwlogo active" src="/public/images/logo-tf.png">
+                        <img class="otfwlogo active" src="/images/logo-tf.png">
                     {{ /wIsDefault }}
                     {{ ^wIsDefault }}
-                        <img class="wlogo" src="/public/images/logo-{{ wAlias }}.png">
+                        <img class="wlogo" src="/images/logo-{{ wAlias }}.png">
                     {{ /wIsDefault }}
                     <div id="loading-top">
                         Loading statistics

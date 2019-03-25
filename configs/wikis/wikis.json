@@ -3,16 +3,31 @@
         "tf",
         "dotapt",
         "portal",
-        "dota",
-        "artifact"
+        "dota"
     ],
-    "aliases": [
-        "tf",
-        "dota",
-        "dotapt",
-        "portal",
-        "artifact"
-    ],
+    "files": {
+        "favicon": {
+            "tf": "/images/wikis/favicon-tf.ico",
+            "dota": "/images/wikis/favicon-dota.ico",
+            "dotapt": "/images/wikis/favicon-dota.ico",
+            "portal": "/images/wikis/favicon-portal.ico",
+            "artifact": "/images/wikis/favicon-artifact.ico"
+        },
+        "logo": {
+            "tf": "/images/wikis/logo-tf.png",
+            "dota": "/images/wikis/logo-dota.png",
+            "dotapt": "/images/wikis/logo-dota.png",
+            "portal": "/images/wikis/logo-portal.png",
+            "artifact": "/images/wikis/logo-artifact.png"
+        },
+        "css": {
+            "tf": "/css/wikis/tf.css",
+            "dota": "/css/wikis/dota.css",
+            "dotapt": "/css/wikis/dota.css",
+            "portal": "/css/wikis/portal.css",
+            "artifact": "/css/wikis/artifact.css"
+        }
+    },
     "name": {
         "tf": "Team Fortress Wiki",
         "dota": "Dota 2 Wiki",
@@ -21,7 +36,7 @@
         "artifact": "Artifact Wiki"
     },
     "creation": {
-        "tf": "2010-06-01",
+        "tf": "2010-06-08",
         "dota": "2011-11-03",
         "dotapt": "2017-01-24",
         "portal": "2011-04-20",

@@ -2,12 +2,8 @@
 
 const mongoose = require("mongoose");
 
-
-    
 const Schema = mongoose.Schema;
 
-
-    
 const userModel = new Schema({
     u_sourcewiki: String,
     u_name: String,
@@ -24,6 +20,8 @@ const userModel = new Schema({
     u_deletecount: Number,
     u_namespaceedits: Array,
     u_topeditedpages: Array,
+    u_thanks: Number,
+    u_thanked: Number,
     dataLastUpdated: String,
     updateComplete: Boolean
 });

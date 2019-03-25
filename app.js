@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/", require(`${__dirname}/routes/main`));
-app.use("/public", express.static(`${__dirname}/public`));
+app.use("/", express.static(`${__dirname}/public`));
 
 app.use(function (req, res) {
     res.status(404).render("error", {

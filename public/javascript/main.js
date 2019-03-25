@@ -4,15 +4,18 @@ const windowProtocol = window.location.protocol;
 const windowHost = window.location.host;
 const selectedWiki = window.location.pathname.split("/")[1] ? window.location.pathname.split("/")[1] : "tf";
 
-function logoSwitch(element, orange = false) {
-    element.classList.remove("active");
-
-    if (orange) {
-        let orangeElement = document.getElementById("cross-o");
-        orangeElement.classList.add("active");
-    } else {
-        let defaultElement = document.getElementById("cross");
-        defaultElement.classList.add("active");
+function logoSwitch(element) {
+    element.classList.toggle("otfwlogoslow");
+    element.classList.toggle("otfwlogofast");
+    const logoGrey = (location.protocol + "//" + window.location.hostname + "/images/wikis/logo-tf.png")
+        .replace("localhost", "localhost:3000");
+    const logoOrange = (location.protocol + "//" + window.location.hostname + "/images/wikis/logo-tf-orange.png")
+        .replace("localhost", "localhost:3000");
+    if (element.src == logoGrey) {
+        element.src = logoOrange;
+    }
+    else {
+        element.src = logoGrey;
     }
 }
 

@@ -5,15 +5,18 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
-    <link rel="shortcut icon" href="/public/images/favicon-{{ wAlias }}.ico">
-    <link href="/public/css/mui.min.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/main.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
-    <script src="/public/javascript/main.js"></script>
-    <script src="/public/javascript/sorttable.js"></script>
-    <script src="/public/javascript/listpage.js"></script>
-    <title>Wiki Stats &mdash; List / {{ lName }}</title>
+    {{ #wFavicon }}
+    <link rel="shortcut icon" href="{{{ wFavicon }}}">
+    {{ /wFavicon }}
+    <link href="/css/third_party/mui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/css/main.css" rel="stylesheet" type="text/css" />
+    {{ #wCSS }}
+    <link href="{{{ wCSS }}}" rel="stylesheet" type="text/css" />
+    {{ /wCSS }}
+    <script src="/javascript/third_party/sorttable.js"></script>
+    <script src="/javascript/main.js"></script>
+    <script src="/javascript/listpage.js"></script>
+    <title>{{ lName }} - {{ wName }} | Wiki Stats</title>
 </head>
 
 <body>
@@ -24,7 +27,7 @@
             <a href="/{{ wAlias }}/wiki">Home</a>
             >
             <a href="/{{ wAlias }}/lists">Lists</a>
-            > Active
+            > {{ lName }}
         </div>
 
         <div class="mui--appbar-height"></div>
@@ -70,7 +73,8 @@
                     <th class="mui--text-center">Date received</th>
                     {{ /wWikiCapList }}
                     <th class="mui--text-center">
-                        <span class="tooltip" title="This is defined by wiki contributions within the last 30 days.">Is active?</span>
+                        <span class="tooltip" title="This is defined by wiki contributions within the last 30 days.">Is
+                            active?</span>
                     </th>
                     <th class="mui--text-center">Registration date</th>
                 </tr>

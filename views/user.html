@@ -5,39 +5,38 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
-    {{ ^mEdits }}
-    <meta name="Description" content="User not found.">
-    {{ /mEdits }}
     {{ #mEdits }}
-    <meta name="Description" content="{{ user }} has a total of {{ mEdits }} contributions with an average of {{ mEditsAvg }} edits per day since joining on {{ wName }}.">
+    <meta name="Description"
+        content="{{ user }} has a total of {{ mEdits }} contributions with an average of {{ mEditsAvg }} edits per day since joining on {{ wName }}.">
     {{ /mEdits }}
-    <meta property="og:title" content="Wiki Stats &mdash; {{ wName }} &mdash; {{ user }}'s Statistics">
+    <meta property="og:title" content="Wiki Stats &mdash; {{ wName }}: {{ user }}'s Statistics">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://wiki.tarkoviski.me/{{ wAlias }}/user/{{ user }}">
-    {{ ^mEdits }}
-    <meta property="og:description" content="User not found.">
-    {{ /mEdits }}
     {{ #mEdits }}
-    <meta property="og:description" content="{{ user }} has a total of {{ mEdits }} contributions with an average of {{ mEditsAvg }} edits per day since joining on {{ wName }}.">
+    <meta property="og:description"
+        content="{{ user }} has a total of {{ mEdits }} contributions with an average of {{ mEditsAvg }} edits per day since joining on {{ wName }}.">
     {{ /mEdits }}
-    <link rel="shortcut icon" href="/public/images/favicon-{{ wAlias }}.ico">
-    <link href="/public/css/mui.min.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/main.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
-    <link href="/public/css/user.css" rel="stylesheet" type="text/css" />
-    <script src="/public/javascript/main.js"></script>
-    <script src="/public/javascript/mui.min.js"></script>
+    {{ #wFavicon }}
+    <link rel="shortcut icon" href="{{{ wFavicon }}}">
+    {{ /wFavicon }}
+    <link href="/css/third_party/mui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/css/main.css" rel="stylesheet" type="text/css" />
+    {{ #wCSS }}
+    <link href="{{{ wCSS }}}" rel="stylesheet" type="text/css" />
+    {{ /wCSS }}
+    <link href="/css/user.css" rel="stylesheet" type="text/css" />
+    <script src="/javascript/third_party/mui.min.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/public/javascript/userpage.js" defer></script>
-    <title>Wiki Stats &mdash; {{ user }} &mdash; {{ wName }}</title>
+    <script src="/javascript/main.js"></script>
+    <script src="/javascript/userpage.js"></script>
+    <title>{{ user }} - {{ wName }} | Wiki Stats</title>
 </head>
 
 <body>
 
     {{> header }}
-    
+
     <div class="mui-container mui--text-center">
         <div class="mui--z1 list-curlist">
             <a href="/{{ wAlias }}/wiki">Home</a>
@@ -48,7 +47,7 @@
 
         <!-- Mensagem de erro -->
         <div id="error">
-            <img src="/public/images/banana-peel.png" style="width: 10%;">
+            <img src="/images/banana-peel.png" style="width: 10%;">
 
             <div class="mui--text-display1">
                 Banana Error #404
@@ -61,7 +60,8 @@
             <div class="mui--text-subhead error-message">
                 Or else the page will automatically reload once the update process is finished.
                 <br>
-                <span style="font-size: 95%;" class="case-note">(Keep in mind that wiki user names are case sensitive!<span class="similar-user"></span>)</span>
+                <span style="font-size: 95%;" class="case-note">(Keep in mind that wiki user names are case
+                    sensitive!<span class="similar-user"></span>)</span>
             </div>
         </div>
 
@@ -79,7 +79,8 @@
                     Updating... <small class="lost-connection-update">⚠️ Connection lost!</small>
                 </span><br>
                 <small id="bot-note" class="hidden">
-                    This user has a lot of edits. Their stats are only updated once per day and may be slightly outdated.
+                    This user has a lot of edits. Their stats are only updated once per day and may be slightly
+                    outdated.
                 </small>
             </div>
             <div class="mui-row mui--text-justify">
@@ -89,7 +90,8 @@
                     <p>Total contributions:
                         <b>
                             <a id="user-total-edits"></a>
-                            <span id="user-total-edits-minus-creations" title="Deducting page creations and file uploads" class="tooltip"></span>
+                            <span id="user-total-edits-minus-creations"
+                                title="Deducting page creations and file uploads" class="tooltip"></span>
                         </b>
                     </p>
 
@@ -110,9 +112,23 @@
                     <p>Files uploaded:
                         <b>
                             <a id="user-uploads-plus-new-versions"></a>
-                            <span id="user-uploads" title="Deducting file uploads that were uploaded as a new version of an existing file." class="tooltip"></span>
+                            <span id="user-uploads"
+                                title="Deducting file uploads that were uploaded as a new version of an existing file."
+                                class="tooltip"></span>
                         </b>
                     </p>
+
+                    <div id="wiki-has-thanks" class="hidden">
+                        <!-- Thanks -->
+                        <p>Thanks given:
+                            <b id="user-thanks-given">
+                            </b>
+                        </p>
+                        <p>Thanks received:
+                            <b id="user-thanks-received">
+                            </b>
+                        </p>
+                    </div>
 
                     <div id="user-has-rights" class="hidden">
                         <!-- Rights status -->
@@ -124,8 +140,8 @@
                             <b id="user-block-count">
                             </b>
                         </p>
-
                     </div>
+
                     <!-- Most edited -->
                     <p style="text-justify: none">Most edited page<span id="plural"></span>:
                         <b id="user-top-pages">
@@ -154,12 +170,14 @@
                         </div>
                         <div class="mui-col-md-12 mui-col-md-offset-1">
                             <p>
-                                <b id="user-streak-count-current-b"><span id="user-streak-count-current"></span> day<span id="user-streak-current-plural"></span></b> current
+                                <b id="user-streak-count-current-b"><span id="user-streak-count-current"></span>
+                                    day<span id="user-streak-current-plural"></span></b> current
                             </p>
                         </div>
                         <div class="mui-col-md-12 mui-col-md-offset-1">
                             <p>
-                                <b id="user-streak-count-b"><span id="user-streak-count"></span> day<span id="user-streak-plural"></span></b> longest
+                                <b id="user-streak-count-b"><span id="user-streak-count"></span> day<span
+                                        id="user-streak-plural"></span></b> longest
                             </p>
                         </div>
                     </div>
@@ -205,10 +223,10 @@
             <div class="mui-row mui--text-center">
                 <div class="mui-col-md-12">
                     {{ #wIsDefault }}
-                        <img class="otfwlogo active" src="/public/images/logo-tf.png">
+                    <img class="otfwlogo active" src="/images/wikis/logo-tf.png">
                     {{ /wIsDefault }}
                     {{ ^wIsDefault }}
-                        <img class="wlogo" src="/public/images/logo-{{ wAlias }}.png">
+                    <img class="wlogo" src="{{ wLogo }}">
                     {{ /wIsDefault }}
                     <div id="loading-top">
                         Loading statistics

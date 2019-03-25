@@ -65,7 +65,9 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                     }, {
                         u_registration: userData.registration,
                         updateComplete: false,
-                    }, { upsert: true }, (err) => {
+                    }, {
+                        upsert: true
+                    }, (err) => {
                         if (err) {
                             logger.mongooseerror(`${sourceWiki}: An error occurred while updating the database for "${user}" (update = true): ${err}`);
                             return;
@@ -81,7 +83,9 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                         u_name: user,
                     }, {
                         dataLastUpdated: moment().format("x")
-                    }, { upsert: true }, (err) => {
+                    }, {
+                        upsert: true
+                    }, (err) => {
                         if (err) {
                             logger.mongooseerror(`${sourceWiki}: An error occurred while updating the database for ${user} (update = false): ${err}`);
                             return;
@@ -127,6 +131,24 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 list: "logevents"
             };
 
+            let parametersLogsUsersThanked = {
+                action: "query",
+                ledir: "newer",
+                lelimit: 500,
+                leuser: user,
+                letype: "thanks",
+                list: "logevents"
+            };
+
+            let parametersLogsUserThanks = {
+                action: "query",
+                ledir: "newer",
+                lelimit: 500,
+                letitle: `User:${user}`,
+                letype: "thanks",
+                list: "logevents"
+            };
+
             let uBlocked = 0;
             let uContribs = [];
             let uDeleted = 0;
@@ -136,6 +158,8 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
             let uAllUploads = 0;
             let uNameSpaces = {};
             let editedPages = {};
+            let uThanked = 0;
+            let uThanks = 0;
 
             function callUserContribs() {
                 logger.verbose(`${sourceWiki}: Fetching contributions for "${user}"...`);
@@ -207,8 +231,7 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             return;
                         }
                     }
-                }
-                );
+                });
             }
 
             function getUserDeletions() {
@@ -251,8 +274,7 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             return;
                         }
                     }
-                }
-                );
+                });
             }
 
             function getUserBlocks() {
@@ -289,14 +311,103 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 }, (err) => {
                     if (err) {
                         if (err === "NOMOR") {
-                            updateUserModel();
+                            if (sourceWiki === "tf") {
+                                getUsersThanked();
+                            } else {
+                                updateUserModel();
+                            }
                         } else {
                             logger.error(`We received an error other than "NOMOR" (getUserBlocks): ${err}`);
                             return;
                         }
                     }
-                }
-                );
+                });
+            }
+
+            function getUsersThanked() {
+                logger.verbose(`${sourceWiki}: getting thanks received for "${user}"...`);
+                socket.emit("update", user, sourceWiki);
+
+                async.whilst(() => true, (callback) => {
+                    MWClient.api.call(parametersLogsUsersThanked, (err, data, next) => {
+                        if (err) {
+                            logger.apierror(`${sourceWiki}: getUsersThanked returned "${err}" (${user})`);
+                            return;
+                        }
+
+                        let logEvents = data.logevents;
+                        let logEventsLength = logEvents && logEvents.length;
+
+                        logger.verbose(`${sourceWiki}: We received ${logEventsLength} thanks received for "${user}"`);
+
+                        if (logEventsLength > 0) {
+                            logEvents.forEach(() => {
+                                uThanked = (uThanked || 0) + 1;
+                            });
+                        }
+
+                        if (next) {
+                            logger.verbose(`${sourceWiki}: Fetching next page of thanks received for "${user}" [${next.lecontinue}]`);
+                            parametersLogsUsersThanked["lecontinue"] = next.lecontinue;
+                            getUsersThanked();
+                        } else {
+                            logger.verbose(`${sourceWiki}: There's no more thanks received for "${user}". Finishing with "NOMOR"...`);
+                            callback("NOMOR");
+                        }
+                    });
+                }, (err) => {
+                    if (err) {
+                        if (err === "NOMOR") {
+                            getUserThanks();
+                        } else {
+                            logger.error(`We received an error other than "NOMOR" (getUsersThanked): ${err}`);
+                            return;
+                        }
+                    }
+                });
+            }
+
+            function getUserThanks() {
+                logger.verbose(`${sourceWiki}: getting thanks for "${user}"...`);
+                socket.emit("update", user, sourceWiki);
+
+                async.whilst(() => true, (callback) => {
+                    MWClient.api.call(parametersLogsUserThanks, (err, data, next) => {
+                        if (err) {
+                            logger.apierror(`${sourceWiki}: getUserThanks returned "${err}" (${user})`);
+                            return;
+                        }
+
+                        let logEvents = data.logevents;
+                        let logEventsLength = logEvents && logEvents.length;
+
+                        logger.verbose(`${sourceWiki}: We received ${logEventsLength} thanks for "${user}"`);
+
+                        if (logEventsLength > 0) {
+                            logEvents.forEach(() => {
+                                uThanks = (uThanks || 0) + 1;
+                            });
+                        }
+
+                        if (next) {
+                            logger.verbose(`${sourceWiki}: Fetching next page of thanks for "${user}" [${next.lecontinue}]`);
+                            parametersLogsUserThanks["lecontinue"] = next.lecontinue;
+                            getUserThanks();
+                        } else {
+                            logger.verbose(`${sourceWiki}: There's no more thanks for "${user}". Finishing with "NOMOR"...`);
+                            callback("NOMOR");
+                        }
+                    });
+                }, (err) => {
+                    if (err) {
+                        if (err === "NOMOR") {
+                            updateUserModel();
+                        } else {
+                            logger.error(`We received an error other than "NOMOR" (getUserThanks): ${err}`);
+                            return;
+                        }
+                    }
+                });
             }
 
             function updateUserModel() {
@@ -333,9 +444,13 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             u_deletecount: uDeleted,
                             u_namespaceedits: uNameSpaces,
                             u_topeditedpages: uTopPages,
+                            u_thanks: uThanks,
+                            u_thanked: uThanked,
                             dataLastUpdated: moment().format("x"),
                             updateComplete: true
-                        }, { upsert: true }, (err) => {
+                        }, {
+                            upsert: true
+                        }, (err) => {
                             if (err) {
                                 logger.mongooseerror(`${sourceWiki}: Failed to update user data for "${user}" (updateUserModel): ${err}`);
                                 return;
@@ -357,9 +472,14 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 }
             } else {
                 let update = list["users"];
-                update.push({ "name": user, "wiki": sourceWiki });
+                update.push({
+                    "name": user,
+                    "wiki": sourceWiki
+                });
 
-                fs.writeFile("./data/userqueue.json", JSON.stringify({ users: update }, null, 2), (err) => {
+                fs.writeFile("./data/userqueue.json", JSON.stringify({
+                    users: update
+                }, null, 2), (err) => {
                     if (err) {
                         logger.error(`${sourceWiki}: Failed to add user "${user}" to the update queue: ${err}`);
                         return;
@@ -377,7 +497,11 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 userModel.update({
                     u_sourcewiki: sourceWiki,
                     u_name: user,
-                }, { updateComplete: true }, { upsert: true }, (err) => {
+                }, {
+                    updateComplete: true
+                }, {
+                    upsert: true
+                }, (err) => {
                     if (err) {
                         logger.mongooseerror(`${sourceWiki}: Failed to update user data for ${user} (getUserContribs finally): ${err}`);
                         return;
@@ -393,7 +517,10 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
 
             socket.emit("update", user, sourceWiki);
 
-            userModel.find({ u_sourcewiki: sourceWiki, u_name: user }, (err) => {
+            userModel.find({
+                u_sourcewiki: sourceWiki,
+                u_name: user
+            }, (err) => {
                 if (err) {
                     logger.mongooseerror(`${sourceWiki}: Failed to check user data for "${user}" (checkUserData): ${err}`);
                     return;
@@ -406,11 +533,13 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
 
                 // Remove o usuário da fila
                 users = users.filter(function (u) {
-                    return u.name !== user;// && u.wiki !== sourceWiki;
+                    return u.name !== user; // && u.wiki !== sourceWiki;
                 });
 
                 // Salva a nova fila
-                fs.writeFileSync("./data/userqueue.json", JSON.stringify({ "users": users }, null, 2), (err) => {
+                fs.writeFileSync("./data/userqueue.json", JSON.stringify({
+                    "users": users
+                }, null, 2), (err) => {
                     if (err) {
                         logger.error(`${sourceWiki}: Failed to remove user "${user}" from the update queue: ${err}`);
                         return;

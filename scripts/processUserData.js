@@ -295,6 +295,8 @@ module.exports.processUser = (data) => {
             uTopPageCount: utils.formatNumber(data.u_topeditedpages[0]),
             uClass: classes[1] ? classes[1] : classes[0],
             uIsExpensive: isExpensive,
+            uThanksGiven: data.u_thanked ? utils.formatNumber(data.u_thanked) : 0,
+            uThanksReceived: data.u_thanks ? utils.formatNumber(data.u_thanks) : 0,
             cContribsByDate: contributionsByDay,
             cContribsWeekAndHour: contributionsWeekAndHour,
             cContribsByYM: contributionsByYearAndMonth,
