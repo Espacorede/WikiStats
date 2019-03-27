@@ -53,6 +53,10 @@ wikis["enabled"].forEach(function (wiki) {
         updateNameSpaces(wiki);
     }
 
+    if (!fs.existsSync(`./data/extensions/${wiki}.json`)) {
+        updateExtensions(wiki);
+    }
+
     if (shouldPopulateLists) {
         logger.verbose(`${wiki}: Updating lists.`);
         updateLists.updateLists(wiki);
@@ -60,29 +64,65 @@ wikis["enabled"].forEach(function (wiki) {
 });
 
 function updateNameSpaces(wiki) {
-    if (!fs.existsSync(`./data/namespaces/${wiki}.json`)) {
-        logger.verbose(`${wiki}: Updating list of namespaces.`);
+    logger.verbose(`${wiki}: Updating list of namespaces.`);
 
-        let MWClient = new bot(`./configs/wikis/${wiki}-config.json`);
+    let MWClient = new bot(`./configs/wikis/${wiki}-config.json`);
 
-        MWClient.api.call({
-            "action": "query",
-            "meta": "siteinfo",
-            "siprop": "namespaces"
-        }, (err, data) => {
+    MWClient.api.call({
+        "action": "query",
+        "meta": "siteinfo",
+        "siprop": "namespaces"
+    }, (err, data) => {
+        if (err) {
+            logger.apierror(`${wiki}: namespaces returned "${err}" (updateNameSpaces)`);
+            return;
+        }
+        let namespaces = {
+            namespaces: {
+            }
+        };
+        for (let nm in data["namespaces"]) {
+            namespaces["namespaces"][nm] = data["namespaces"][nm]["*"];
+        }
+        fs.writeFile(`./data/namespaces/${wiki}.json`, JSON.stringify(namespaces, null, 2), (err) => {
             if (err) {
-                logger.apierror(`${wiki}: namespaces returned "${err}" (updateNameSpaces)`);
+                logger.error(`${wiki}: Failed to save namespaces/${wiki}.json (updateNameSpaces): ${err}`);
                 return;
             }
 
-            fs.writeFile(`./data/namespaces/${wiki}.json`, JSON.stringify(data, null, 2), (err) => {
-                if (err) {
-                    logger.error(`${wiki}: Failed to save namespaces/${wiki}.json (updateNameSpaces): ${err}`);
-                    return;
-                }
-
-                logger.verbose(`${wiki}: Namespaces successfully updated!`);
-            });
+            logger.verbose(`${wiki}: Namespaces successfully updated!`);
         });
-    }
+    });
+}
+
+function updateExtensions(wiki) {
+    logger.verbose(`${wiki}: Updating list of extensions.`);
+
+    let MWClient = new bot(`./configs/wikis/${wiki}-config.json`);
+
+    MWClient.api.call({
+        "action": "query",
+        "meta": "siteinfo",
+        "siprop": "extensions"
+    }, (err, data) => {
+        if (err) {
+            logger.apierror(`${wiki}: extensions returned "${err}" (updateExtensions)`);
+            return;
+        }
+        let extensions = {
+            extensions: {
+            }
+        };
+        for (let ex of data["extensions"]) {
+            extensions["extensions"][ex["name"]] = ex["url"];
+        }
+        fs.writeFile(`./data/extensions/${wiki}.json`, JSON.stringify(extensions, null, 2), (err) => {
+            if (err) {
+                logger.error(`${wiki}: Failed to save extensions/${wiki}.json (updateExtensions): ${err}`);
+                return;
+            }
+
+            logger.verbose(`${wiki}: Extensions successfully updated!`);
+        });
+    });
 }

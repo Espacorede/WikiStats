@@ -177,9 +177,7 @@ socketio.on(selectedUser, (message) => {
         document.getElementById("user-block-count").innerText = data.uBlockCount;
         document.getElementById("user-delete-count").innerText = data.uDeleteCount;
 
-        // Funciona, mas o certo seria fazer isso automaticamente no futuro
-        // Isso permitiria que mais estatísitcas de extensões fossem facilmente adicionadas
-        if (selectedWiki === "tf") {
+        if (data.wThanks) {
             document.getElementById("wiki-has-thanks").removeAttribute("class");
             document.getElementById("user-thanks-given").innerText = data.uThanksGiven;
             document.getElementById("user-thanks-received").innerText = data.uThanksReceived;

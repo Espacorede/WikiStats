@@ -8,3 +8,6 @@ data/**/*.json
 data/lists/*-active.json
 data/lists/*-top100.json
 data/lists/*-wikicap.json
+
+package-lock.json
+yarn.lock

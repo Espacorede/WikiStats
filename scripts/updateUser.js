@@ -149,6 +149,9 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 list: "logevents"
             };
 
+            const extensions = require(`../data/extensions/${sourceWiki}.json`)["extensions"];
+            const wikiHasThanks = Object.keys(extensions).some((x) => x === "Thanks");
+
             let uBlocked = 0;
             let uContribs = [];
             let uDeleted = 0;
@@ -311,7 +314,7 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 }, (err) => {
                     if (err) {
                         if (err === "NOMOR") {
-                            if (sourceWiki === "tf") {
+                            if (wikiHasThanks) {
                                 getUsersThanked();
                             } else {
                                 updateUserModel();

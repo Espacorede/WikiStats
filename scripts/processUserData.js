@@ -212,7 +212,7 @@ module.exports.processUser = (data) => {
         }
 
         // Name color
-        let bots = require(`../data/lists/${data.u_sourcewiki}-bots.json`);
+        const bots = require(`../data/lists/${data.u_sourcewiki}-bots.json`);
 
         let classes = ["user-normal"];
         let staffMembers = require(`../data/lists/${data.u_sourcewiki}-staff.json`);
@@ -223,8 +223,8 @@ module.exports.processUser = (data) => {
 
         let namespaceEdits = {};
 
-        let namespaces = require(`../data/namespaces/${data.u_sourcewiki}.json`)["namespaces"];
-        let userNamespaceEdits = data.u_namespaceedits[0];
+        const namespaces = require(`../data/namespaces/${data.u_sourcewiki}.json`)["namespaces"];
+        const userNamespaceEdits = data.u_namespaceedits[0];
 
         for (let number in userNamespaceEdits) {
             let namespaceData = namespaces[number];
@@ -234,7 +234,7 @@ module.exports.processUser = (data) => {
             }
 
             if (namespaceData) {
-                namespaceEdits[namespaceData["*"] || "Main"] = userNamespaceEdits[number];
+                namespaceEdits[namespaceData || "Main"] = userNamespaceEdits[number];
             }
             else {
                 namespaceEdits["Other"] = (namespaceEdits["Other"] || 0) + userNamespaceEdits[number];
@@ -246,8 +246,8 @@ module.exports.processUser = (data) => {
         }
 
         if (data.u_sourcewiki === "tf") {
-            let capUsers = require("../data/lists/tf-wikicap.json");
-            let valve = require("../data/lists/tf-valve.json");
+            const capUsers = require("../data/lists/tf-wikicap.json");
+            const valve = require("../data/lists/tf-valve.json");
 
             valve["users"].includes(data.u_name) ? classes.push("user-valve") : "";
 
@@ -256,12 +256,16 @@ module.exports.processUser = (data) => {
             }
         }
 
-        let wikiConfig = require(`../configs/wikis/${data.u_sourcewiki}-config.json`);
-        let wikiUrl = `https://${wikiConfig["server"]}`;
-        let wikiPath = `${wikiUrl}${wikiConfig["path"] === "/w" ? "/w/" : wikiConfig["path"]}`;
-        let oddPath = data.u_sourcewiki === "tf" || data.u_sourcewiki === "portal" ? "wiki/" : "";
-        let encodedUsername = encodeURIComponent(data.u_name);
-        let isExpensive = userEdits > 10000;
+        const wikiConfig = require(`../configs/wikis/${data.u_sourcewiki}-config.json`);
+        const wikiUrl = `https://${wikiConfig["server"]}`;
+        const wikiPath = `${wikiUrl}${wikiConfig["path"] === "/w" ? "/w/" : wikiConfig["path"]}`;
+        const oddPath = data.u_sourcewiki === "tf" || data.u_sourcewiki === "portal" ? "wiki/" : "";
+        const encodedUsername = encodeURIComponent(data.u_name);
+        const isExpensive = userEdits > 10000;
+
+        const wikiExtensions = require(`../data/extensions/${data.u_sourcewiki}.json`);
+        const wikiHasThanks = Object.keys(wikiExtensions["extensions"]).some((x) => x === "Thanks");
+
         let out = {
             uWiki: data.u_sourcewiki,
             uName: data.u_name,
@@ -303,6 +307,7 @@ module.exports.processUser = (data) => {
             wSpecialContributions: `${wikiPath}index.php?title=Special%3AContributions&contribs=user&target=${encodedUsername}`,
             wFiles: `${wikiUrl}/${oddPath}Special:ListFiles?limit=50&ilsearch=&user=${encodedUsername}&ilshowall=1`,
             wLinks: `${wikiPath}index.php?title=`,
+            wThanks: wikiHasThanks,
         };
 
         logger.debug(`${data.u_sourcewiki}: User data for "${data.u_name}" successfully processed!`);
