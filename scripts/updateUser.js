@@ -64,6 +64,9 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                         u_userid: userData.userid,
                     }, {
                         u_registration: userData.registration,
+                        u_groups: userData.groups.filter(function (g) {
+                            return !userData.implicitgroups.includes(g);
+                        }),
                         updateComplete: false,
                     }, {
                         upsert: true
@@ -93,6 +96,16 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
 
                         cachegoose.clearCache(`${sourceWiki}user-${user}`);
                     });
+                }
+            });
+        } else {
+            userModel.remove({
+                u_sourcewiki: sourceWiki,
+                u_name: userData.name
+            }, function (err) {
+                if (!err) {
+                    logger.debug(`${sourceWiki}: Removed ${user} from database (missing userid)`);
+                    socket.emit("missing", user, sourceWiki);
                 }
             });
         }

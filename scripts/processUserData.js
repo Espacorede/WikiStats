@@ -221,6 +221,10 @@ module.exports.processUser = (data) => {
             classes.push("user-staff");
         }
 
+        if (staffMembers["users"].some(u => u.name === data.u_name && u.note === "curse")) {
+            classes.push("user-curse");
+        }
+
         let namespaceEdits = {};
 
         const namespaces = require(`../data/namespaces/${data.u_sourcewiki}.json`)["namespaces"];

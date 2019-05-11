@@ -34,7 +34,7 @@
                 <p>Wiki Stats currently supports the following wikis:</p>
                 <ul class="about-supportedwikis">
                     {{ #pWikis }}
-                    <li><a href="{{ url }}">{{ name }}</a> &ndash; <a href="/{{ path }}/wiki">{{ path }}</a></li>
+                    <li><a href="{{ url }}">{{ name }}</a> &ndash; <a href="/wiki/{{ path }}">{{ path }}</a></li>
                     {{ /pWikis }}
                 </ul>
 
@@ -56,7 +56,8 @@
                     <a rel="noopener noreferrer" href="https://expressjs.com" target="_blank">Express.js</a>
                 </li>
                 <li>
-                    <a rel="noopener noreferrer" href="https://github.com/janl/mustache.js" target="_blank">mustache.js</a>
+                    <a rel="noopener noreferrer" href="https://github.com/janl/mustache.js"
+                        target="_blank">mustache.js</a>
                 </li>
                 <li>
                     <a rel="noopener noreferrer" href="https://github.com/macbre/nodemw" target="_blank">nodemw</a>
@@ -65,13 +66,15 @@
                     <a rel="noopener noreferrer" href="https://momentjs.com" target="_blank">Moment.js</a>
                 </li>
                 <li>
-                    <a rel="noopener noreferrer" href="http://www.kryogenix.org/code/browser/sorttable" target="_blank">SortTable</a>
+                    <a rel="noopener noreferrer" href="http://www.kryogenix.org/code/browser/sorttable"
+                        target="_blank">SortTable</a>
                 </li>
                 <li>
                     <a rel="noopener noreferrer" href="https://socket.io" target="_blank">socket.io</a>
                 </li>
                 <li>
-                    <a rel="noopener noreferrer" href="https://github.com/allegro/node-worker-nodes" target="_blank">worker-nodes</a>
+                    <a rel="noopener noreferrer" href="https://github.com/allegro/node-worker-nodes"
+                        target="_blank">worker-nodes</a>
                 </li>
                 <li>
                     <a rel="noopener noreferrer" href="https://github.com/winstonjs/winston" target="_blank">winston</a>
@@ -84,8 +87,8 @@
             <div class="about-sourcecode">
                 <div>
                     The source code is available on
-                    <a href="https://gitlab.com/Espacorede/WikiStats" target="_blank">GitLab</a> and on <a href="https://github.com/Espacorede/WikiStats"
-                        target="_blank">GitHub</a> (read-only mirror)
+                    <a href="https://gitlab.com/Espacorede/WikiStats" target="_blank">GitLab</a> and on <a
+                        href="https://github.com/Espacorede/WikiStats" target="_blank">GitHub</a>
                 </div>
             </div>
 
@@ -93,8 +96,9 @@
 
             <h3>Can you add support for this other wiki?</h3>
             <div class="about-faqnswer">
-                Possibly. Feel free to <a href="https://gitlab.com/Espacorede/WikiStats/issues" target="_blank">open an
-                    issue</a> about it.
+                Possibly. Feel free to open an
+                issue about it on <a href="https://gitlab.com/Espacorede/WikiStats/issues" target="_blank">GitLab</a> or
+                <a href="https://github.com/Espacorede/WikiStats/issues" target="_blank">GitHub</a>.
             </div>
 
             <h3>How often are stats updated?</h3>
@@ -106,25 +110,7 @@
 
             <h3>How do I report a bug / suggest something?</h3>
             <div class="about-faqnswer">
-                You can <a href="https://gitlab.com/Espacorede/WikiStats/issues" target="_blank">open an issue on
-                    GitLab</a> or send a private message to "Tark" on Freenode.
-            </div>
-
-            <h3>Who are the creators?</h3>
-            <div class="about-faqnswer">
-                <a href="mailto:luis@espacore.de">Tark</a> and
-                <!--his boyfriend--><a href="mailto:gabriel@espacore.de">StargazerG</a>.
-                <br><br>
-                <a href="/tf/user/Gabrielwoj">Gabrielwoj</a>, <a href="/tf/user/Goodjob">Goodjob</a>, JB, <a href="/dotapt/user/Ravor">Ravor</a>,
-                <a href="/tf/user/TidB">TidB</a>, <a href="/dotapt/user/SiegelZ">SiegelZ</a> and <a href="/tf/user/Wookipan">Wikipan</a>
-                also helped with testing and valuable feedback.
-                <br><br>
-                <small><b>Note:</b> The users above are listed in no particular order.</small>
-            </div>
-
-            <h3>How many users are stored in your database?</h3>
-            <div class="about-faqnswer">
-                About {{ userstotal }} users in total across all wikis.
+                You can open an issue or send a private message to "Tark" on Freenode.
             </div>
 
             <h3>My edit count is different from what my preferences page says it is, what gives?</h3>
@@ -132,11 +118,30 @@
                 The number on your preferences page counts moved/deleted pages, we don't. Only visible edits are
                 counted.
             </div>
-            
+
             <h3>Why is my thanks/deletion/block count wrong or outdated?</h3>
             <div class="about-faqnswer">
-                User data only gets updated if the number of contributions changes, so if you thanked or blocked someone or deleted a page but didn't edit, 
+                User data only gets updated if the number of contributions changes, so if you thanked or blocked someone
+                or deleted a page but didn't edit,
                 move or upload anything since the last time your data was updated in the DB, it won't update.
+            </div>
+
+            <h3>How many users are stored in your database?</h3>
+            <div class="about-faqnswer">
+                About {{ userstotal }} users in total across all wikis.
+            </div>
+
+            <h3>Who are the creators?</h3>
+            <div class="about-faqnswer">
+                <a href="mailto:luis@espacore.de">Tark</a> and <a href="mailto:gabriel@espacore.de">StargazerG</a>.
+                <br><br>
+                <a href="/user/tf/Gabrielwoj">Gabrielwoj</a>, <a href="/user/tf/Goodjob">Goodjob</a>, JB, <a
+                    href="/user/dotapt/Ravor">Ravor</a>,
+                <a href="/user/tf/TidB">TidB</a>, <a href="/user/dotapt/SiegelZ">SiegelZ</a> and <a
+                    href="/user/tf/Wookipan">Wikipan</a>
+                also helped with testing and valuable feedback.
+                <br><br>
+                <small><b>Note:</b> The users above are listed in no particular order.</small>
             </div>
         </div>
 

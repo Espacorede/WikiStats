@@ -2,19 +2,18 @@
 
 const windowProtocol = window.location.protocol;
 const windowHost = window.location.host;
-const selectedWiki = window.location.pathname.split("/")[1] ? window.location.pathname.split("/")[1] : "tf";
+let selectedWiki = window.location.pathname.split("/")[2] ? window.location.pathname.split("/")[2] : "tf";
 
 function logoSwitch(element) {
     element.classList.toggle("otfwlogoslow");
     element.classList.toggle("otfwlogofast");
-    const logoGrey = (location.protocol + "//" + window.location.hostname + "/images/wikis/logo-tf.png")
-        .replace("localhost", "localhost:3000");
-    const logoOrange = (location.protocol + "//" + window.location.hostname + "/images/wikis/logo-tf-orange.png")
-        .replace("localhost", "localhost:3000");
+
+    const logoGrey = window.location.href + "images/wikis/logo-tf.png";
+    const logoOrange = window.location.href + "images/wikis/logo-tf-orange.png";
+
     if (element.src == logoGrey) {
         element.src = logoOrange;
-    }
-    else {
+    } else {
         element.src = logoGrey;
     }
 }
@@ -34,15 +33,33 @@ function searchUser(input) {
     }
 
     if (history.pushState) {
-        const url = `${windowProtocol}//${windowHost}/${selectedWiki}/user/${user}`;
+        const url = `${windowProtocol}//${windowHost}/user/${selectedWiki}/${user}`;
         window.history.pushState({
             path: url
         }, "", url);
         location.reload();
     } else {
-        window.location.href = `${windowProtocol}//${windowHost}/${selectedWiki}/user/${user}`;
+        window.location.href = `${windowProtocol}//${windowHost}/user/${selectedWiki}/${user}`;
         location.reload();
     }
+}
+
+function homepageSwitch(wiki) {
+    const wikiName = document.querySelector(`#wiki-${wiki} > span`).textContent;
+    const wikiImage = document.querySelector(`#wiki-${wiki} > img`).src;
+
+    if (wiki !== "tf") {
+        document.getElementById("homepage-logo").className = "wlogo";
+    } else {
+        document.getElementById("homepage-logo").className = "otfwlogo otfwlogoslow active";
+    }
+
+    document.getElementById("homepage-logo").src = wikiImage;
+    document.getElementById("homepage-link").href = `/wiki/${wiki}`;
+    document.getElementById("homepage-user").placeholder = `Search user on ${wikiName}...`;
+    //document.getElementById("homepage-search").textContent = `Search on ${wikiName}`;
+    document.getElementById("homepage-wiki").textContent = wikiName;
+    selectedWiki = wiki;
 }
 
 window.onload = function () {

@@ -7,7 +7,10 @@ module.exports = (socketio) => {
     socketio.on("connection", (socket) => {
         socket.on("load", (user, wiki = "tf") => {
             userModel
-                .find({ u_sourcewiki: wiki, u_name: user })
+                .find({
+                    u_sourcewiki: wiki,
+                    u_name: user
+                })
                 .cache(0, `${wiki}user-${user}`)
                 .exec((err, data) => {
                     if (err) {
@@ -20,9 +23,8 @@ module.exports = (socketio) => {
                     } else if (!data[0].u_contribs[0]) {
                         socketio.emit("noedits", user, wiki);
                     } else {
-
                         let hasLocalData = (data[0].u_contribs.length > 10000 &&
-                     fs.existsSync(`./data/expensiveusers/${wiki}/${user}.json`));
+                            fs.existsSync(`./data/expensiveusers/${wiki}/${user}.json`));
 
                         if (hasLocalData) {
                             fs.readFile(`./data/expensiveusers/${wiki}/${user}.json`, (err, fileData) => {
@@ -43,11 +45,9 @@ module.exports = (socketio) => {
                                 }
                                 socketio.emit(json.uName, json);
                             });
-                        }
-                        else {
+                        } else {
                             processAndEmitData(data[0]._doc);
                         }
-
                     }
                 });
         });
@@ -66,4 +66,3 @@ module.exports = (socketio) => {
         });
     }
 };
-

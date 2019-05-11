@@ -22,6 +22,7 @@ const userModel = new Schema({
     u_topeditedpages: Array,
     u_thanks: Number,
     u_thanked: Number,
+    u_groups: Array,
     dataLastUpdated: String,
     updateComplete: Boolean
 });

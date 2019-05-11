@@ -33,9 +33,10 @@
         <div class="mui-row mui--text-center">
             <div class="mui-col-md-12">
                 {{ #wIsDefault }}
-                    <img class="otfwlogo otfwlogoslow active" id="cross" onclick="javascript:logoSwitch(this, true);" src="/images/wikis/logo-tf.png" title="{{ wName }}">                {{ /wIsDefault }}
+                <img class="otfwlogo otfwlogoslow active" id="cross" onclick="javascript:logoSwitch(this, true);"
+                    src="/images/wikis/logo-tf.png" title="{{ wName }}"> {{ /wIsDefault }}
                 {{ ^wIsDefault }}
-                    <img class="wlogo" src="{{{ wLogo }}}" title="{{ wName }}">
+                <img class="wlogo" src="{{{ wLogo }}}" title="{{ wName }}">
                 {{ /wIsDefault }}
             </div>
         </div>
@@ -65,8 +66,8 @@
                     <b>{{ wUsers }}</b>
                 </div>
                 <div class="mui-col-md-12">Active users:
-                        <b>{{ wActiveUsers }}</b>
-                    </div>
+                    <b>{{ wActiveUsers }}</b>
+                </div>
             </div>
 
             <div class="mui-row mui-col-md-offset-4">
@@ -84,13 +85,6 @@
                 </div>
             </div>
 
-            <!--
-            <div class="mui-row">
-                <div class="mui-col-md-12">Largest number of edits in a day:
-                    <b title="Soon™" class="pls-help">{{ wEditsOneDayOverall }}</b>
-                </div>
-            </div>-->
-
             <hr>
 
             <div class="mui-row mui--text-center">
@@ -104,9 +98,58 @@
                     </button>
                 </div>
             </div>
+
+
+            <div class="mui-row">
+                <div class="mui-col-xs-4 mui-col-md-offset-2">
+                    <table class="mui-table mui-table--bordered">
+                        <thead>
+                            <tr>
+                                <th>Top 10 Editors</th>
+                                <th># Edits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#wTop10}}
+                            <tr>
+                                <td>
+                                    <a href="/user/{{ wAlias }}/{{ name }}" class="{{ class }}">{{ name }}</a>
+                                </td>
+                                <td>
+                                    {{ edits }}
+                                    <small>({{{ editsperday }}} per day)</small>
+                                </td>
+                            </tr>
+                            {{/wTop10}}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mui-col-xs-4">
+                    <table class="mui-table mui-table--bordered">
+                        <thead>
+                            <tr>
+                                <th>Top 10 Uploaders</th>
+                                <th># Uploads</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#wTop10Uploaders}}
+                            <tr>
+                                <td>
+                                    <a href="/user/{{ wAlias }}/{{ name }}" class="{{ class }}">{{ name }}</a>
+                                </td>
+                                <td>
+                                    {{ uploads }}
+                                </td>
+                            </tr>
+                            {{/wTop10Uploaders}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-
+    
 </body>
 
 </html>

@@ -24,9 +24,9 @@
 
     <div class="mui-container mui--text-center">
         <div class="mui--z1 list-curlist">
-            <a href="/{{ wAlias }}/wiki">Home</a>
+            <a href="/wiki/{{ wAlias }}">Home</a>
             >
-            <a href="/{{ wAlias }}/lists">Lists</a>
+            <a href="/wiki/{{ wAlias }}/lists">Lists</a>
             > {{ lName }}
         </div>
 
@@ -45,11 +45,14 @@
         <div class="mui--z1 list-curlist">
             Legend:
             <span class="user-normal">Regular user</span>
-            <span class="user-bot">Bot account</span>
+            <span class="user-bot">Bot</span>
             {{ #wWikiCap }}
-            <span class="user-wikicap">Wiki Cap recipient</span>
+            <span class="user-wikicap">Wiki Cap Recipient</span>
             {{ /wWikiCap }}
-            <span class="user-staff">Staff member</span>
+            <span class="user-staff">Staff Member</span>
+            {{ #wGamepedia }}
+            <span class="user-curse">Curse</span>
+            {{ /wGamepedia }}
         </div>
 
         <div class="mui--appbar-height"></div>
@@ -90,7 +93,7 @@
                     <td>{{ top100_position }}</td>
                     {{ /wTop100List }}
                     <td>
-                        <a href="/{{ wAlias }}/user/{{ name }}" class="{{ class }}">{{ name }}</a>
+                        <a href="/user/{{ wAlias }}/{{ name }}" class="{{ class }}">{{ name }}</a>
                     </td>
                     <td>{{ edits }}</td>
                     <td>{{{ editsperday }}}</td>

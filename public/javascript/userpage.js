@@ -70,7 +70,6 @@ window.onload = () => {
         }
     });
 
-    console.log(`Requesting ${selectedUser} data from server...`);
     socketio.emit("load", selectedUser, selectedWiki);
 
     setInterval(() => {
@@ -88,8 +87,7 @@ socketio.on("notfound", (user, wiki) => {
 
 socketio.on("noedits", (user, wiki) => {
     if (user === selectedUser && wiki === selectedWiki) {
-        console.log("User has no edits!");
-        document.querySelector(".error-title").innerHTML = `User ${selectedUser} has no edits!`;
+        document.querySelector(".error-title").innerHTML = `"${selectedUser}" has no edits!`;
         let caseNote = document.querySelector(".case-note");
         if (caseNote) {
             caseNote.style.display = "none";
@@ -135,8 +133,6 @@ socketio.on(selectedUser, (message) => {
     if (!message || message.uWiki !== selectedWiki) {
         return;
     }
-
-    console.log("Data received!");
 
     let data = message;
 
@@ -1015,13 +1011,13 @@ function compareUser() {
     }
 
     if (history.pushState) {
-        let url = `${windowProtocol2}//${windowHost2}/${selectedWiki}/user/${selectedUser}/compare?user=${target}`;
+        let url = `${windowProtocol2}//${windowHost2}/user/${selectedWiki}/${selectedUser}/compare?user=${target}`;
         window.history.pushState({
             path: url
         }, "", url);
         location.reload();
     } else {
-        window.location.href = `${windowProtocol2}//${windowHost2}/${selectedWiki}/user/${selectedUser}/compare?user=${target}`;
+        window.location.href = `${windowProtocol2}//${windowHost2}/user/${selectedWiki}/${selectedUser}/compare?user=${target}`;
         location.reload();
     }
 }
@@ -1032,12 +1028,12 @@ function cleanUserName(name) {
 
     if (name !== nameClean) {
         if (history.pushState) {
-            let url = `${windowProtocol2}//${windowHost2}/${selectedWiki}/user/${nameClean}`;
+            let url = `${windowProtocol2}//${windowHost2}/user/${selectedWiki}/${nameClean}`;
             window.history.pushState({
                 path: url
             }, "", url);
         } else {
-            window.location.href = `${windowProtocol2}//${windowHost2}/${selectedWiki}/user/${nameClean}`;
+            window.location.href = `${windowProtocol2}//${windowHost2}/user/${selectedWiki}/${nameClean}`;
         }
     }
 
