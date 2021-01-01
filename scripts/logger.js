@@ -1,17 +1,17 @@
-/** * (c) Espacorede Project * **/
+/** ** (c) Espacorede Project ** **/
 
-const moment = require("moment");
+const utils = require("./utils");
 const winston = require("winston");
 const config = require("../configs/wikistats-config.json");
 
-let logLevels = {
+const logLevels = {
     error: 0,
     apierror: 1,
     mongooseerror: 2,
     warn: 3,
     info: 4,
     debug: 5,
-    verbose: 6,
+    verbose: 6
 };
 
 winston.addColors({
@@ -21,25 +21,25 @@ winston.addColors({
         apierror: "red",
         mongooseerror: "red",
         warn: "yellow",
-        info: "white",
+        info: "green",
         debug: "gray",
-        verbose: "grey"
+        verbose: "gray"
     }
 });
 
-let logger = winston.createLogger({
+const logger = winston.createLogger({
     level: config.logger,
     levels: logLevels,
     format: winston.format.combine(
         winston.format.colorize(),
         winston.format.timestamp(),
         winston.format.printf((info) => {
-            let level = info["level"];
-            let message = info["message"];
-            let timestamp = moment(info["timestamp"]).format("MM-DD-YYYY HH:mm");
+            const level = info.level;
+            const message = info.message;
+            const timestamp = utils.formatDateLocaleString(info.timestamp).replace(/\//g, "-").replace(",", "");
 
             return `${timestamp} (${process.pid}) [${level}]: ${message}`;
-        }),
+        })
     ),
     transports: [
         new winston.transports.File({

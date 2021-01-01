@@ -1,4 +1,6 @@
-window.onload = () => {
+/** ** (c) Espacorede Project ** **/
+
+window.addEventListener("load", () => {
     document.getElementById("userBig").addEventListener("keyup", (listener) => {
         listener.preventDefault();
 
@@ -11,4 +13,4 @@ window.onload = () => {
 
     const table = document.getElementsByTagName("th")[0];
     sorttable.innerSortFunction.apply(table, []);
-};
+});

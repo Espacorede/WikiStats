@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{#unless wTheme}}
+    <meta name="theme-color" content="{{ wTheme }}">
+    {{/unless}}
+    <meta property="og:title" content="Top {{ data.tMonth }} {{ data.tYear }} · {{ wName }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Wiki Stats">
+    <meta property="og:description"
+        content="List of editors by contribution count for {{ data.tMonth }} {{ data.tYear }}.">
+    <meta name="Description" content="List of editors by contribution count for {{ data.tMonth }} {{ data.tYear }}.">
+    <meta property="og:image" content="{{ webHost }}/images/wikis/logo-{{ wAlias }}.png">
+    <link href="{{ webHost }}/images/wikis/favicon-{{ wAlias }}.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/preprocessed/tops.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/wikis/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <script src="{{ webHost }}/javascript/listpage.js" type="text/javascript"></script>
+    <script src="{{ webHost }}/javascript/third_party/sorttable.js" type="text/javascript"></script>
+    <title>{{ data.tMonth }} {{ data.tYear }} - {{ wName }} | Wiki Stats</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="container text-center">
+
+        <div class="spacer-small"></div>
+
+        <h1 class="text-display1">
+            Top Contributors:
+            {{ data.tMonth }} {{ data.tYear }}
+        </h1>
+
+        <p class="text-subhead">
+            🔝 contributors for {{ data.tMonth }} {{ data.tYear }} @ {{ wName }}
+            <br>
+            <small>{{ data.tStart }} &mdash; {{ data.tEnd }}</small>
+        </p>
+
+
+        <div class="spacer-small"></div>
+        <!--
+
+        <div class="list-curlist">
+            <span class="user-normal">Regular user</span>
+            {{#if wWikiCap}}
+            <span class="user-wikicap">Wiki Cap Recipient</span>
+            {{/if}}
+            <span class="user-staff">Staff Member</span>
+            {{#if wGamepedia}}
+            <span class="user-curse">Curse</span>
+            {{/if}}
+        </div>
+
+        <div class="spacer-small"></div>-->
+
+
+        <table class="top-table sortable">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th class="text-center">User</th>
+                    <th class="text-center">Contributions</th>
+                    <th class="text-center">Contrib. per day</th>
+                    <th class="text-center">Edit count</th>
+                    <th class="text-center">Upload count</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {{#each data.tData}}
+                <tr class="top-{{ index }}">
+                    <td>{{ index }}</td>
+                    <td>
+                        <a href="{{ webHost }}/user/{{ wAlias }}/{{ name }}" class="{{ class }}">{{ name }}</a>
+                    </td>
+                    <td>{{ contribs }}</td>
+                    <td>{{{ contribsperday }}}</td>
+                    <td>{{ edits }}</td>
+                    <td>{{ uploads }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <div class="spacer-small"></div>
+
+    </div>
+
+</body>
+
+</html>

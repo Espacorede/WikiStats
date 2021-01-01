@@ -1,0 +1,25 @@
+name: Generate CSS
+
+on:
+  push:
+    branches: 
+      - develop
+    paths:
+      - "**.scss"
+  pull_request:
+    branches: 
+      - develop
+    paths:
+      - "**.scss"
+
+jobs:
+    generate-sass:
+      runs-on: ubuntu-latest
+      steps:
+            - uses: actions/checkout@v2
+
+            - name: Install Dependencies
+              run: npm install --silent
+
+            - name: Run sass-generate
+              run: npm run sass-generate

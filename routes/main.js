@@ -1,82 +1,36 @@
-/** * (c) Espacorede Project * **/
+/** ** (c) Espacorede Project ** **/
 
 const express = require("express");
-const logger = require("../scripts/logger");
-const userModel = require("../models/userModel");
-const wikis = require("../configs/wikis/wikis.json");
-const utils = require("../scripts/utils");
 const router = express.Router();
 
-// Homepage
+const RateLimit = require("express-rate-limit");
+const RateLimitMongoStore = require("rate-limit-mongo");
 
-router.get("/", (req, res) => {
-    if (wikis["enabled"].length === 1) {
-        res.redirect(`${wikis["enabled"][0]}/wiki`);
-        return;
-    }
+const baseController = require("../controllers/baseController");
+const config = require("../configs/wikistats-config.json");
+const utils = require("../scripts/utils");
 
-    userModel.find({}, "u_name u_edits", function (err, data) {
-        if (err) {
-            logger.mongooseerror(`Failed to retrieve users from database (/): ${err}`);
-            utils.renderInternalErrorPage(res);
-            return;
-        }
-
-        let availableWikis = [];
-
-        wikis["enabled"].forEach(wiki => {
-            let newWiki = {
-                path: wiki,
-                name: wikis.name[wiki],
-                logo: wikis.files.logo[wiki]
-            };
-            availableWikis.push(newWiki);
-        });
-
-        availableWikis.sort((a, b) => a.name.localeCompare(b.name));
-
-        res.render("homepage.html", {
-            pWikis: availableWikis,
-            mUsers: data ? data.length : "Unknown",
-            mWikis: wikis["enabled"].length,
-            partials: {
-                header: "common/header"
-            }
-        });
-    });
+const middlewareLimiter = new RateLimit({
+    store: new RateLimitMongoStore({
+        uri: `mongodb+srv://${config.mongoose.user}:${config.mongoose.password}@${config.mongoose.hostm}/${config.mongoose.db}`,
+        collectionName: "ratelimits"
+    }),
+    max: 10,
+    windowMs: 60000
 });
+
+// Base
+router.get("/", middlewareLimiter, baseController.homepage);
+router.get("/about", middlewareLimiter, baseController.about);
+
+// Actions
+router.get("/action/search", utils.middlewareWikiIsEnabledJson, baseController.search);
+router.get("/action/getAchievements", baseController.achievements);
 
 // Other
-
-router.get("/about", (req, res) => {
-    userModel.find({}, "u_name u_edits", (err, data) => {
-        if (err) {
-            logger.mongooseerror(`Failed to retrieve users from database (/about): ${err}`);
-            utils.renderInternalErrorPage(res);
-            return;
-        }
-
-        let availableWikis = [];
-
-        wikis["enabled"].forEach(wiki => {
-            let newWiki = {
-                path: wiki,
-                name: wikis.name[wiki],
-                url: wikis.url[wiki]
-            };
-            availableWikis.push(newWiki);
-        });
-
-        availableWikis.sort((a, b) => a.name.localeCompare(b.name));
-
-        res.render("about.html", {
-            userstotal: data ? data.length : "Unknown",
-            pWikis: availableWikis,
-            partials: {
-                header: "common/header"
-            }
-        });
-    });
-});
+router.get("/github", baseController.github);
+router.get("/gitlab", baseController.gitlab);
+router.get("/changelog", middlewareLimiter, baseController.changelog);
+router.get("/offline", baseController.offline);
 
 module.exports = router;

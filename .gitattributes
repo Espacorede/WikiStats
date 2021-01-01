@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+public/css/third_party/* linguist-vendored
+public/javascript/third_party/* linguist-vendored
+public/font/* linguist-vendored

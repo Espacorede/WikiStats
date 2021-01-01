@@ -1,45 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="/css/third_party/mui.min.css" rel="stylesheet" type="text/css" />
-    <link href="/css/main.css" rel="stylesheet" type="text/css" />
-    <script src="/javascript/main.js" type="text/javascript"></script>
-    <title>Error {{ errorCode }} - Wiki Stats </title>
+    <meta name="robots" content="noindex, nofollow">
+    {{#if wName}}
+    <meta name="theme-color" content="{{ wTheme }}">
+    <link href="{{ webHost }}/images/wikis/favicon-{{ wAlias }}.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/wikis/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/third_party/fa_wikistats.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <title>Error {{ error.code }} - {{ wName }} | Wiki Stats </title>
+    {{^}}
+    <meta name="theme-color" content="#3498DB">
+    <link href="{{ webHost }}/images/wikis/favicon-tf.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/third_party/fa_wikistats.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <title>{{ error.title }} | Wiki Stats </title>
+    {{/if}}
 </head>
 
 <body>
+
     {{> header }}
 
-    <div class="mui-container mui--text-center">
-        <div class="mui--z1 list-curlist">
-            <a href="/">Home</a>
-            > Error {{ #errorCode }}{{ errorCode }}{{ /errorCode }}
+    <div class="container text-center">
+        <div class="spacer"></div>
+
+        <img src="{{ webHost }}/images/banana-peel.png" style="width: 10%;">
+
+        <div class="text-display1">
+            Banana Error {{#if error.code}}{{ error.code }}{{/if}}
         </div>
 
-        <div class="mui--appbar-height"></div>
-
-        <img src="/images/banana-peel.png" style="width: 10%;">
-
-        <div class="mui--text-display1">
-            Banana Error {{ #errorCode }}#{{ errorCode }}{{ /errorCode }}
+        <div class="text-subtitle error-title">
+            {{ error.title }}
         </div>
 
-        <div class="mui--text-title error-title">
-            {{ errorTitle }}
+        <div class="text-subhead error-message">
+            {{#if wName}}
+            {{^}}
+            <span class="random">{{{ error.messagerandom }}}</span>
+            {{/if}}
+            {{{ error.message }}}
         </div>
 
-        <div class="mui--text-subhead error-message">
-            {{{ errorMessage }}}
-        </div>
-
-        {{ #errorReturnToMain }}
+        {{#if error.return}}
         <div class="error-goback">
-            <a href="/">Go back...</a>
+            {{#if wName}}
+            <a href="{{ webHost }}/wiki/{{ wAlias }}">Go back...</a>
+            {{^}}
+            <a href="{{ webHost }}">Go home...</a>
+            {{/if}}
         </div>
-        {{ /errorReturnToMain }}
+        {{/if}}
+
+        <div class="spacer"></div>
     </div>
+
 </body>
+
+</html>

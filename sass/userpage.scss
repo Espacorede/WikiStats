@@ -1,0 +1,226 @@
+@charset "utf-8";
+@import "mixin";
+
+.stats-box {
+    @include respond-to("large") {
+        line-height: 15px;
+        margin-left: 11%;
+    }
+
+    &::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .stats {
+        box-sizing: border-box;
+
+        float: left;
+        padding: 10px;
+
+        p {
+            text-align: left;
+        }
+
+        .stats-offset-left {
+            margin-left: 15px;
+        }
+
+        .stats-offset-right {
+            text-align: left;
+            margin-left: 15px;
+        }
+
+        @include respond-to("medium") {
+            width: 100%;
+        }
+
+        @include respond-to("large") {
+            width: 50%;
+        }
+    }
+}
+
+.tab-selector {
+    text-align: left;
+    margin-bottom: 20px;
+
+    @include respond-to("mobile-only") {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .list {
+        border: 2px solid var(--header-background);
+        padding: 10px;
+
+        .tab {
+            cursor: pointer;
+            margin: 1px 3px;
+
+            &.tab-selected {
+                font-weight: bold;
+            }
+        }
+    }
+}
+
+.user-notices {
+    margin-top: -30px;
+
+    &.bot {
+        color: rgba(0, 0, 0, 0.6);
+    }
+
+    &.updating {
+        color: #b35215;
+    }
+}
+
+.tab-content {
+    display: none;
+}
+
+.achievement-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-rows: repeat(auto-fill, 81px);
+    grid-gap: 0.5em;
+
+    .listing {
+        min-width: 400px;
+        min-height: 81px;
+        text-align: left;
+
+        .details {
+            margin: 0.5em 0;
+            padding: 0.5em 5.5em;
+        }
+
+        .icon {
+            float: left;
+            width: 72px;
+            height: 72px;
+            //border-radius: 50%;
+            //border: solid 1px #000;
+        }
+
+        // Borders
+        .platinum {
+            background-color: #e6e6e6;
+        }
+
+        .australium {
+            background-color: #e6b800;
+        }
+
+        .gold {
+            background-color: #ffd500;
+        }
+
+        .silver {
+            background-color: #b5b5b5;
+        }
+
+        .bronze {
+            background-color: #c4891a;
+        }
+
+        .tin {
+            background-color: #e2dede;
+        }
+    }
+}
+
+.user-error {
+    margin-top: 100px;
+
+    img {
+        @include respond-to("mobile-only") {
+            width: 35%;
+        }
+
+        @include respond-to("desktop-only") {
+            width: 10%;
+        }
+    }
+
+    .case-note {
+        font-size: 95%;
+    }
+}
+
+img {
+    &.wlogo,
+    &.otfwlogo {
+        @include respond-to("mobile-only") {
+            width: 175px;
+            height: 175px;
+        }
+
+        @include respond-to("desktop-only") {
+            width: 200px;
+            height: 200px;
+        }
+    }
+
+    &.otfwlogo {
+        display: none;
+
+        &.active {
+            display: unset;
+        }
+
+        &.otfwlogoslow {
+            animation: spin 20s linear infinite;
+        }
+
+        &.otfwlogofast {
+            animation: spin 1s linear infinite !important;
+        }
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// FIXME: Imported from legacy CSS with no changes
+// Probably doesn't work well on mobile
+
+.google-visualization-tooltip {
+    pointer-events: none;
+}
+
+.google-visualization-tooltip-item {
+    padding: 0 1em 0 1em !important;
+}
+
+#week-hour-select span,
+#timeline-select-year span,
+#timeline-select-month span {
+    margin: 0 1em;
+    cursor: pointer;
+}
+
+#timeline-select-year {
+    margin-bottom: 0.5em;
+}
+
+#month-overall:not(.selected-month) {
+    color: #d77030;
+}
+
+.selected-week,
+.selected-year,
+.selected-month {
+    font-weight: bold;
+    text-decoration: underline;
+}

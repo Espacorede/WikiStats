@@ -1,13 +1,25 @@
-<h1 align="center">Wiki Stats</h1>
+# Wiki Stats
+
+A website for viewing data about wiki editors.
 
 ## About
 
-Wiki Stats is based on the original [Wiki-Fi](https://web.archive.org/web/20160802192949/http://stats.wiki.tf/).
+Wiki Stats is based on the original Wiki-Fi made by Moussekateer, but unlike its spiritual predecessor, it currently only tracks data about users.
 
-It currently only supports the [Official Team Fortress Wiki](https://wiki.tf); the [Dota 2 Wiki](https://dota2.gamepedia.com) and its brazilian offshoot; and the [Portal Wiki](https://theportalwiki.com) but may support other wikis at some point in the future.
+This was initially created to mainly support the [Official Team Fortress Wiki](https://wiki.tf) and only later in development it was eventually hastily patched to support more wikis.
 
-## Running
+Make sure you have [Node.js](https://nodejs.org) and [npm](https://www.npmjs.com/get-npm) installed and 
+[MongoDB](https://www.mongodb.com/) database at your disposal.
 
-Wiki Stats is built using [Node.js](https://nodejs.org/en/). 
+### Running
 
-Due to a limitation in the worker-nodes library, Wiki Stats currently only runs on Linux. To run it on Windows, [install WSL with your Linux distribution of choice](https://docs.microsoft.com/en-us/windows/wsl/install-win10) (if you don't have one, it's probably Debian), make sure you [install Node on this subsystem](https://nodejs.org/en/download/package-manager/), and run node/NPM through bash in the Windows command line.
+1. Edit and generate the configuration files
+    - Open ```configs/wikistats-config.json``` and edit it with your settings.
+    - Run ```npm run add-wiki``` to generate the wiki files.
+    - Run ```npm run generate-css``` to generate the CSS.
+    - Additionally, any logos and/or favicons should reside on ```public/images/wikis```
+        - favicon-$alias.ico for the favicon
+        - logo-$alias.png for the logo
+
+2. Run!
+    - Run ```npm start``` to start running Wiki Stats.

@@ -1,4 +1,4 @@
-/** * (c) Espacorede Project * **/
+/** ** (c) Espacorede Project ** **/
 
 const cachegoose = require("cachegoose");
 const config = require("../configs/wikistats-config.json");
@@ -12,7 +12,10 @@ const mongoDB = `mongodb+srv://${
 
 cachegoose(mongoose);
 
-mongoose.connect(mongoDB, { useNewUrlParser: true });
+mongoose.connect(mongoDB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
 mongoose.Promise = global.Promise;
 
 module.exports = mongoose.connection;

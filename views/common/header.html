@@ -1,67 +1,191 @@
-<header class="mui-appbar mui--z1">
-    <div class="mui-container">
-        <table>
-            <tr class="mui--appbar-height">
-                <td class="mui--text-left">
-                    <ul class="mui-list--inline mui--text-body2">
+<div id="jarate"></div>
+
+<header>
+    <div class="header-container hide-on-mobile">
+        <table class="header-table">
+            <tr>
+                <td class="text-left">
+                    <ul>
                         <li>
-                            <a href="/" class="mui--text-title header-link">Home</a>
+                            <a href="{{ webHost }}" title="View Wiki Stats Homepage">
+                                Home
+                            </a>
                         </li>
-                        {{ #wAlias }}
+                        {{#if helpers.wAlias}}
                         <li>
                             &middot;
                         </li>
                         <li>
-                            <a href="/wiki/{{ wAlias }}" class="mui--text-title header-link">Wiki</a>
+                            <a href="{{ webHost }}/wiki/{{ wAlias }}" title="View Wiki Homepage">
+                                Wiki
+                            </a>
                         </li>
                         <li>
                             &middot;
                         </li>
                         <li>
-                            <a href="/wiki/{{ wAlias }}/lists" class="mui--text-title header-link">Lists</a>
+                            <a href="{{ webHost }}/wiki/{{ wAlias }}/lists" title="View Lists">
+                                Lists
+                            </a>
                         </li>
-                        {{ /wAlias }}
                         <li>
                             &middot;
                         </li>
                         <li>
-                            <a href="/about" class="mui--text-title header-link">About</a>
+                            <a href="{{ webHost }}/wiki/{{ wAlias }}/tops" title="View Monthly Tops">
+                                Monthly Top
+                            </a>
+                        </li>
+                        {{/if}}
+                        <li>
+                            &middot;
+                        </li>
+                        <li>
+                            <a href="{{ webHost }}/about" title="About Wiki Stats">
+                                About
+                            </a>
                         </li>
                     </ul>
                 </td>
 
-                <td class="mui--text-right">
-                    <ul class="mui-list--inline mui--text-body2">
-                        {{ #wAlias }}
+                <td class="text-right">
+                    <ul>
+                        <li class="header-pindrop" id="me-wikis">
+                            <div class="dropdown">
+                                <button class="btn">
+                                    Pinned
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="content" id="me-wikis-list">
+                                </ul>
+                            </div>
+                        </li>
+                        <li id="dark-mode-header">
+                            <button class="btn header" id="dark-mode-toggle">
+                                Lights On
+                            </button>
+                        </li>
+                        {{#if helpers.wAlias}}
                         <li>
-                            <div class="mui-textfield">
+                            <div class="header-search">
                                 <input type="text" id="userBig" placeholder="Search user...">
                             </div>
                         </li>
                         <li>
-                            <button class="mui-btn mui-btn--flat header-search-button"
-                                onclick="javascript:searchUser('userBig');">
+                            <button class="btn header search" onclick="javascript:searchUser('userBig');"
+                                title="Search user on {{ wName }}">
                                 Search
                             </button>
                         </li>
-                        {{ /wAlias }}
+                        {{/if}}
                     </ul>
                 </td>
         </table>
     </div>
-</header>
 
-<div class="mui-container mui--z1 header-notice">
+    <div class="header-container hide-on-desktop">
+        <table class="header-table">
+            <tr>
+                <td class="text-left">
+                    <ul>
+                        <li>
+                            <span class="mobile-hamburger icon-menu"></span>
+                        </li>
+                    </ul>
+                </td>
+                <td class="text-center">
+                    <ul>
+                        <li>
+                            <span class="mobile-title">
+                                <a href="{{ webHost }}" title="View Wiki Stats Homepage">
+                                    Wiki Stats
+                                </a>
+                            </span>
+                        </li>
+                    </ul>
+                </td>
+                <td class="text-right">
+                    <ul>
+                        <li>
+                            <span id="dark-mode-toggle-mobile" class="mobile-darkmode icon-moon"
+                                title="Enable Dark Mode"></span>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="mobile-sidebar hide-on-desktop">
+        <ul>
+            <li class="title">
+                <a href="{{ webHost }}" title="View Wiki Stats Homepage">Wiki Stats</a>
+                <span class="current-wiki">{{wName}}</span>
+            </li>
+            {{#if helpers.wAlias}}
+            <li>
+                <span class="section">Wiki</span>
+            </li>
+            <li>
+                <a href="{{ webHost }}/wiki/{{ wAlias }}" title="View Wiki Homepage">
+                    <span class="icon-home"></span>
+                    Home
+                </a>
+            </li>
+            <li>
+                <a href="{{ webHost }}/wiki/{{ wAlias }}/lists" title="View Lists">
+                    <span class="icon-th-list"></span>
+                    Lists
+                </a>
+            </li>
+            <li>
+                <a href="{{ webHost }}/wiki/{{ wAlias }}/tops" title="View Monthly Tops">
+                    <span class="icon-calendar"></span>
+                    Monthly Top
+                </a>
+            </li>
+        </ul>
+        <ul class="section-other">
+            <li>
+                <span class="section">Other</span>
+            </li>
+            {{^}}
+            <li>
+                <span class="section">Pages</span>
+            </li>
+            <li>
+                <a href="{{ webHost }}" title="View Wiki Stats Homepage">
+                    <span class="icon-home"></span>
+                    Home
+                </a>
+            </li>
+            {{/if}}
+            <li>
+                <a href="{{ webHost }}/about" title="About Wiki Stats">
+                    <span class="icon-help"></span>
+                    About / FAQ
+                </a>
+            </li>
+
+        </ul>
+    </div>
+
     <noscript>
-        <p class="mui--text-headline">Spy's sappin' my wiki!
-            <img src="/images/red-tape.png">
-        </p>
+        <div class="header-container no-js">
+            <div class="message">
+                <p class="text-title">Spy's sappin' my wiki!
+                    <img src="{{ webHost }}/images/red-tape.png" alt="Red-Tape">
+                </p>
 
-        <p class="mui--text-subhead">For full functionality of this site it is necessary to enable JavaScript. Here are
-            the <a rel="noopener noreferrer" href="https://www.enable-javascript.com/" target="_blank">instructions how
-                to enable JavaScript in your web browser</a>.
-        </p>
+                <p class="text-subhead">
+                    For full functionality of this site it is necessary to enable JavaScript. Here are the
+                    <a rel="noopener noreferrer" href="https://www.enable-javascript.com/" target="_blank">
+                        instructions how to enable JavaScript in your web browser
+                    </a>.
+                </p>
+            </div>
+        </div>
     </noscript>
-</div>
+</header>
 
 <div class="header-separator"></div>

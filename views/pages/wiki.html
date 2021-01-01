@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{#unless wTheme}}
+    <meta name="theme-color" content="{{ wTheme }}">
+    {{/unless}}
+    
+    <meta property="og:title" content="{{ wName }} · Wiki Stats">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Wiki Stats">
+    <meta property="og:url" content="{{ webHostCanonical }}/{{ wAlias }}/wiki">
+    <meta property="og:description" content="User statistics for {{ wName }}.">
+    <meta name="Description" content="User statistics for {{ wName }}.">
+    <meta property="og:image" content="{{ webHost }}/images/wikis/logo-{{ wAlias }}.png">
+    <link rel="canonical" href="{{ webHostCanonical }}/{{ wAlias }}/wiki" />
+    <link href="{{ webHost }}/images/wikis/favicon-{{ wAlias }}.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/preprocessed/homepage.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/wikis/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/third_party/fa_wikistats.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <script src="{{ webHost }}/javascript/wikipage.js" type="text/javascript"></script>
+    <title>{{ wName }} - Wiki Stats</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="container homepage-container">
+        <div id="main" class="text-center">
+
+            <div class="spacer"></div>
+
+            <div class="homepage-wiki">
+                {{#if helpers.wIsDefault}}
+                <img class="otfwlogo otfwlogoslow active" title="{{ wName }} Logo"
+                    src="{{ webHost }}/images/wikis/logo-tf.png">
+                {{^}}
+                <img class="wlogo" title="{{ wName }} Logo" src="{{ webHost }}/images/wikis/logo-{{ wAlias }}.png">
+                {{/if}}
+            </div>
+
+
+            <h1 class="text-headline wiki-name">{{ wName }}</h1>
+
+            <div class="homepage-spacer"></div>
+
+            <!-- Begin stats -->
+            <div class="stats-box" style="display: inline-block; text-align: left;">
+                <p style="margin:0"><b>{{ wiki.wEdits }}</b> edits since {{ wiki.wCreated }} (~{{ wiki.wCreatedAgo }})
+                </p>
+                <br>
+                <p style="margin:0">Articles: <b>{{ wiki.wArticles }}</b> <small>(<b>{{ wiki.wPages }}</b>
+                        pages)</small></p>
+                <p style="margin:0">Files: <b>{{ wiki.wImages }}</b></p>
+                <p style="margin:0">Registered users: <b>{{ wiki.wUsers }}</b>
+                <p style="margin:0">Active users: <b>{{ wiki.wActiveUsers }}</b></p>
+                <!-- FIXME
+                <p style="margin:0">Edits: {{ wiki.wEditsLast7 }} last 7 days ({{ wiki.wEdits7Avg }} average/day)
+                    {{ wiki.wEditsLast30 }} last 30 days ({{ wiki.wEdits30Avg }} average/day)</p>-->
+            </div>
+            <!-- End stats -->
+
+            <!-- Begin search -->
+            <div class="spacer-small"></div>
+
+            <div class="homepage-search">
+                <input type="text" id="user" placeholder="Search user on {{ wName }}...">
+
+                <button class="btn btn--big" onclick="searchUser('user');" title="Search user">
+                    Search
+                </button>
+            </div>
+            <!-- End search -->
+
+            <!-- Begin top 10 (see main.js) -->
+            <div id="top10" class="wikihome-top10" style="display: none;">
+                <div class="spacer-small"></div>
+
+                <hr>
+
+                <div class="spacer-small"></div>
+
+                <table class="top-table" id="table-editors">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Top 10 Editors</th>
+                            <th class="text-center"># Edits</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    </tbody>
+                </table>
+
+                <table class="top-table" id="table-uploaders">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Top 10 Uploaders</th>
+                            <th class="text-center"># Uploads</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <!-- endo top 10 -->
+    </div>
+    </div>
+
+</body>
+
+</html>

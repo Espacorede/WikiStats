@@ -1,10 +1,11 @@
-/**** (c) Espacorede Project ****/
+/** ** (c) Espacorede Project ** **/
 
-const bot = require("nodemw");
+const Bot = require("nodemw");
 const db = require("./mongooseConnect");
 const fs = require("fs");
 const logger = require("./logger");
-const tabletojson = require("tabletojson");
+const tabletojson = require("tabletojson").Tabletojson;
+const utils = require("./utils");
 
 db.on("error", (err) => {
     if (err) {
@@ -12,38 +13,31 @@ db.on("error", (err) => {
     }
 });
 
-let usernameSubs = {
-    "darkid": "Darkid",
-    "i-ghost": "I-ghost"
-};
-
 module.exports.updateLists = (currentWiki = "tf") => {
-    let MWClient = new bot(`./configs/wikis/${currentWiki}-config.json`);
+    const MWClient = new Bot(`./configs/wikis/${currentWiki}-config.json`);
 
     function getLists() {
+        const botList = [];
+
         function updateTop100() {
             logger.verbose(`${currentWiki}: Updating list of editors by edit count (Top 100).`);
 
             tabletojson.convertUrl(
                 "https://wiki.teamfortress.com/wiki/Team_Fortress_Wiki:Reports/Users_by_edit_count",
                 (table) => {
-                    let topList = [];
+                    const topList = [];
 
                     Object.keys(table[2]).forEach(user => {
-                        let name = table[2][user]["User"];
-                        let position = table[2][user]["#"];
-
-                        if (name in usernameSubs) {
-                            name = usernameSubs[name];
-                        }
+                        const name = table[2][user].User;
+                        const position = table[2][user]["#"];
 
                         if (position === "BOT") {
                             return;
                         }
 
-                        let userObj = {
-                            "name": name,
-                            "position": position
+                        const userObj = {
+                            name: utils.returnCleanUsername(name),
+                            position: position
                         };
 
                         topList.push(userObj);
@@ -55,10 +49,11 @@ module.exports.updateLists = (currentWiki = "tf") => {
                             return;
                         }
 
-                        let json = JSON.parse(data);
-                        json["users"] = topList;
+                        const json = JSON.parse(data);
+                        json.users = topList;
+                        json.updatedat = utils.formatDateLocaleDateString();
 
-                        fs.writeFile(`./data/lists/${currentWiki}-top100.json`, JSON.stringify(json, null, 2), (err) => {
+                        fs.writeFile(`./data/lists/${currentWiki}-top100.json`, JSON.stringify(json), (err) => {
                             if (err) {
                                 logger.verbose(`${currentWiki}: Failed to save ${currentWiki}-top100.json (updateTop100): ${err}`);
                                 return;
@@ -68,7 +63,6 @@ module.exports.updateLists = (currentWiki = "tf") => {
                             updateCapes();
                         });
                     });
-
                 });
         }
 
@@ -78,25 +72,21 @@ module.exports.updateLists = (currentWiki = "tf") => {
             tabletojson.convertUrl(
                 "https://wiki.teamfortress.com/wiki/List_of_Wiki_Cap_owners",
                 (table) => {
-                    let capes = [];
+                    const capes = [];
 
                     Object.keys(table[0]).forEach(cap => {
-                        let user = table[0][cap]["Recipient"];
-                        let date = table[0][cap]["Date awarded"].substring(/[a-z]/i.exec(table[0][cap]["Date awarded"]).index);
-                        let timestamp = new Date(date).getTime();
-                        let steamid = table[0][cap]["Backpack"];
-                        let number = cap;
+                        const user = table[0][cap].Recipient;
+                        const date = table[0][cap]["Date awarded"].substring((/[a-z]/i).exec(table[0][cap]["Date awarded"]).index);
+                        const timestamp = utils.formatDateTimestamp(date);
+                        const steamid = table[0][cap].Backpack;
+                        const number = cap;
 
-                        if (user in usernameSubs) {
-                            user = usernameSubs[user];
-                        }
-
-                        let capObj = {
-                            "name": user,
-                            "number": number,
-                            "date": date,
-                            "timestamp": timestamp,
-                            "steamid": steamid
+                        const capObj = {
+                            name: utils.returnCleanUsername(user),
+                            number: number,
+                            date: date,
+                            timestamp: timestamp,
+                            steamid: steamid
                         };
 
                         capes.push(capObj);
@@ -108,10 +98,11 @@ module.exports.updateLists = (currentWiki = "tf") => {
                             return;
                         }
 
-                        let json = JSON.parse(data);
-                        json["users"] = capes;
+                        const json = JSON.parse(data);
+                        json.users = capes;
+                        json.updatedat = utils.formatDateLocaleDateString();
 
-                        fs.writeFile(`./data/lists/${currentWiki}-wikicap.json`, JSON.stringify(json, null, 2), (err) => {
+                        fs.writeFile(`./data/lists/${currentWiki}-wikicap.json`, JSON.stringify(json), (err) => {
                             if (err) {
                                 logger.verbose(`${currentWiki}: Failed to save ${currentWiki}-wikicap.json (updateCapes): ${err}`);
                                 return;
@@ -127,23 +118,23 @@ module.exports.updateLists = (currentWiki = "tf") => {
         function updateActiveUsers() {
             logger.verbose(`${currentWiki}: Updating list of active editors.`);
 
-            let activeList = [];
+            const activeList = [];
 
             MWClient.api.call({
-                "action": "query",
-                "list": "allusers",
-                "auactiveusers": "1",
-                "aulimit": "500",
-                "auwitheditsonly": "1"
+                action: "query",
+                list: "allusers",
+                auactiveusers: "1",
+                aulimit: "500",
+                auwitheditsonly: "1"
             }, (err, data) => {
                 if (err) {
                     logger.apierror(`${currentWiki}: allusers returned "${err}" (updateActiveUsers)`);
                     return;
                 }
 
-                data["allusers"].forEach(user => {
+                data.allusers.forEach(user => {
                     activeList.push({
-                        "name": user["name"]
+                        name: user.name
                     });
                 });
 
@@ -153,16 +144,135 @@ module.exports.updateLists = (currentWiki = "tf") => {
                         return;
                     }
 
-                    let json = JSON.parse(data);
-                    json["users"] = activeList;
+                    const json = JSON.parse(data);
+                    json.users = activeList;
+                    json.updatedat = utils.formatDateLocaleDateString();
 
-                    fs.writeFile(`./data/lists/${currentWiki}-active.json`, JSON.stringify(json, null, 2), (err) => {
+                    fs.writeFile(`./data/lists/${currentWiki}-active.json`, JSON.stringify(json), (err) => {
                         if (err) {
                             logger.error(`${currentWiki}: Failed to save ${currentWiki}-active.json (updateActiveUsers): ${err}`);
                             return;
                         }
 
                         logger.verbose(`${currentWiki}: List of active editors successfully updated!`);
+                        updateBots();
+                    });
+                });
+            });
+        }
+
+        function updateBots() {
+            logger.verbose(`${currentWiki}: Updating list of bots.`);
+
+            if (currentWiki === "ac") {
+                return;
+            } else if (currentWiki === "tf") {
+                updateStaffMembers();
+                return;
+            }
+
+            // Bot list
+            // Groups: bot (generic), bot-global (wikia)
+            // Last updated: 14/07/2020
+            // MediaWiki won't let us use group and excludegroup together, so we'll need to do everything at once
+            MWClient.api.call({
+                action: "query",
+                list: "allusers",
+                aulimit: "500",
+                augroup: "bot|bot-global"
+            }, (err, data) => {
+                if (err) {
+                    logger.apierror(`${currentWiki}: allusers returned "${err}" (updateBots)`);
+                    return;
+                }
+
+                data.allusers.forEach(user => {
+                    if (!utils.isUserBlacklisted(user.name)) {
+                        botList.push({
+                            name: user.name
+                        });
+                    }
+                });
+
+                fs.readFile(`./data/lists/${currentWiki}-bots.json`, (err, data) => {
+                    if (err) {
+                        logger.error(`${currentWiki}: Failed to read ${currentWiki}-bots.json (updateBots): ${err}`);
+                        return;
+                    }
+
+                    const json = JSON.parse(data);
+                    json.users = botList;
+                    json.updatedat = utils.formatDateLocaleDateString();
+
+                    fs.writeFile(`./data/lists/${currentWiki}-bots.json`, JSON.stringify(json, null, 4), (err) => {
+                        if (err) {
+                            logger.error(`${currentWiki}: Failed to save ${currentWiki}-bots.json (updateBots): ${err}`);
+                            return;
+                        }
+
+                        logger.verbose(`${currentWiki}: List of bots successfully updated!`);
+                        updateStaffMembers();
+                    });
+                });
+            });
+        }
+
+        function updateStaffMembers() {
+            logger.verbose(`${currentWiki}: Updating list of staff members.`);
+
+            if (currentWiki === "ac") {
+                return;
+            }
+
+            const staffList = [];
+
+            // Staff list
+            // Groups: moderator (tf), Moderators (portal), sysop (generic), bureaucrat (generic), wiki_guardian (gamepedia), staff (wikia)
+            // Last updated: 13/07/2020
+            MWClient.api.call({
+                action: "query",
+                list: "allusers",
+                aulimit: "500",
+                augroup: "moderator|Moderators|sysop|bureaucrat|wiki_guardian|staff"
+            }, (err, data) => {
+                if (err) {
+                    logger.apierror(`${currentWiki}: allusers returned "${err}" (updateStaffMembers)`);
+                    return;
+                }
+
+                data.allusers.forEach(user => {
+                    if (currentWiki === "tf") {
+                        if (!utils.isUserValve(user.name) && !utils.isUserBlacklisted(user.name) && !utils.isUserABot("tf", user.name)) {
+                            staffList.push({
+                                name: user.name
+                            });
+                        }
+                    } else {
+                        if (!utils.isUserBlacklisted(user.name) && !botList.some(u => u.name === user.name)) {
+                            staffList.push({
+                                name: user.name
+                            });
+                        }
+                    };
+                });
+
+                fs.readFile(`./data/lists/${currentWiki}-staff.json`, (err, data) => {
+                    if (err) {
+                        logger.error(`${currentWiki}: Failed to read ${currentWiki}-staff.json (updateStaffMembers): ${err}`);
+                        return;
+                    }
+
+                    const json = JSON.parse(data);
+                    json.users = staffList;
+                    json.updatedat = utils.formatDateLocaleDateString();
+
+                    fs.writeFile(`./data/lists/${currentWiki}-staff.json`, JSON.stringify(json, null, 4), (err) => {
+                        if (err) {
+                            logger.error(`${currentWiki}: Failed to save ${currentWiki}-staffv2.json (updateStaffMembers): ${err}`);
+                            return;
+                        }
+
+                        logger.verbose(`${currentWiki}: List of staff members successfully updated!`);
                         logger.debug(`${currentWiki}: Lists successfully updated!`);
                     });
                 });

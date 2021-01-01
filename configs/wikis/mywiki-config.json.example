@@ -1,0 +1,6 @@
+{
+    "protocol": "https",
+    "server": "wiki.example.com",
+    "path": "/w",
+    "concurrency": 1
+}

@@ -1,0 +1,36 @@
+name: Run ESLint
+
+on:
+  push:
+    branches: 
+      - develop
+    paths:
+      - "**.js"
+  pull_request:
+    branches: 
+      - develop
+    paths:
+      - "**.js"
+
+jobs:
+    lint-node:
+      runs-on: ubuntu-latest
+      steps:
+            - uses: actions/checkout@v2
+
+            - name: Install Dependencies
+              run: npm install --silent
+
+            - name: Run eslint
+              run: npm run eslint
+
+    lint-web:
+      runs-on: ubuntu-latest
+      steps:
+            - uses: actions/checkout@v2
+
+            - name: Install Dependencies
+              run: npm install
+
+            - name: Run eslint-web
+              run: npm run eslint-web

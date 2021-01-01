@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#3498DB">
+    <meta property="og:title" content="Pick Your Wiki! · Wiki Stats ">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Wiki Stats">
+    <meta property="og:url" content="{{ webHostCanonical }}">
+    <meta property="og:description"
+        content="User statistics for gaming-related wikis. Currently tracking {{ mUsers }} users on {{ mWikis }} wikis.">
+    <meta name="Description"
+        content="User statistics for gaming-related wikis. Currently tracking {{ mUsers }} users on {{ mWikis }} wikis.">
+    <link rel="canonical" href="{{ webHostCanonical }}" />
+    <link href="{{ webHost }}/images/wikis/favicon-tf.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/preprocessed/homepage.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/third_party/fa_wikistats.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <title>Pick Your Wiki! | Wiki Stats</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="container homepage-container">
+        <div id="main" class="text-center">
+            <div class="homepage-title">
+                <h1 class="text-display1">
+                    Wiki Stats
+                </h1>
+
+                <p class="homepage-changelog">
+                    {{{ wsFeaturedChangelog }}}
+                </p>
+
+                <h2 class="text-headline">
+                    Analysis of <span>{{ mUsers }}</span> users on <span>{{ mWikis }}</span> wikis
+                </h2>
+            </div>
+
+            <div class="homepage-spacer--logo"></div>
+
+            <div class="homepage-wiki">
+                <a id="homepage-link" href="{{ webHost }}/wiki/tf" title="View wiki statistics">
+                    <img id="homepage-logo" class="otfwlogo otfwlogoslow active"
+                        src="{{ webHost }}/images/wikis/logo-tf.png" alt="Team Fortress Wiki Logo">
+                </a>
+
+                <p class="text-headline wiki-name">Team Fortress Wiki</p>
+            </div>
+
+            <div class="homepage-spacer"></div>
+
+            <div class="homepage-search">
+                <input type="text" id="homepage-user" placeholder="Search user on Team Fortress Wiki...">
+
+                <button class="btn btn--small" onclick="searchUser('homepage-user');" title="Search user">
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <div id="featured" class="text-center">
+            <hr>
+            <p class="text-subtitle homepage-featured-title">Featured Wikis</p>
+
+            <div id="homepage-links">
+                {{#each pWikis}}
+                <button id="wiki-{{ path }}" class="btn" onclick="homepageSwitch('{{ path }}');"
+                    title="Switch to {{name}}">
+                    <div class="wiki-container">
+                        <img class="wiki-icon" alt="{{name}}" src="{{ webHost }}/images/wikis/logo-{{ path }}.png">
+                        <span class="wiki-name">{{name}}</span>
+                    </div>
+                </button>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,9 +1,10 @@
-/** * (c) Espacorede Project * **/
+/** ** (c) Espacorede Project ** **/
 
 const async = require("async");
-const bot = require("nodemw");
+const Bot = require("nodemw");
 const cachegoose = require("cachegoose");
 const db = require("./mongooseConnect");
+const utils = require("./utils");
 const logger = require("./logger");
 const moment = require("moment");
 const wikiModel = require("../models/wikiModel.js");
@@ -15,7 +16,7 @@ db.on("error", (err) => {
 });
 
 module.exports.updateWiki = (currentWiki = "tf") => {
-    let MWClient = new bot(`./configs/wikis/${currentWiki}-config.json`);
+    const MWClient = new Bot(`./configs/wikis/${currentWiki}-config.json`);
 
     function updateWiki() {
         let wikiActiveUsers = "";
@@ -33,7 +34,7 @@ module.exports.updateWiki = (currentWiki = "tf") => {
         function getWikiInfo() {
             logger.verbose(`${currentWiki}: Updating wiki information`);
 
-            let parameters = {
+            const parameters = {
                 action: "query",
                 meta: "siteinfo",
                 siprop: "general"
@@ -45,7 +46,7 @@ module.exports.updateWiki = (currentWiki = "tf") => {
                     return;
                 }
 
-                let wikidata = data["general"];
+                const wikidata = data.general;
 
                 wikiName = wikidata.sitename;
 
@@ -56,7 +57,7 @@ module.exports.updateWiki = (currentWiki = "tf") => {
         function getWikiAge() {
             logger.verbose(`${currentWiki}: Updating wiki age.`);
 
-            wikiAge = moment(require("../configs/wikis/wikis.json")["creation"][currentWiki], "YYYY-MM-DD").fromNow();
+            wikiAge = moment(require("../configs/wikis/wikis.json").creation[currentWiki], "YYYY-MM-DD").fromNow();
 
             getWikiStatistics();
         }
@@ -65,7 +66,7 @@ module.exports.updateWiki = (currentWiki = "tf") => {
         function getWikiStatistics() {
             logger.verbose(`${currentWiki}: Updating wiki statistics.`);
 
-            let parameters = {
+            const parameters = {
                 action: "query",
                 meta: "siteinfo",
                 siprop: "statistics"
@@ -77,7 +78,7 @@ module.exports.updateWiki = (currentWiki = "tf") => {
                     return;
                 }
 
-                let wikidata = data["statistics"];
+                const wikidata = data.statistics;
 
                 wikiPages = wikidata.pages;
                 wikiArticles = wikidata.articles;
@@ -94,16 +95,16 @@ module.exports.updateWiki = (currentWiki = "tf") => {
         function getRecentChanges() {
             logger.verbose(`${currentWiki}: Checking recent changes.`);
 
-            let daysToLookFor = 30;
-            let daysToLookForTimestamp = moment(moment().subtract(daysToLookFor, "days")).format("X");
+            const daysToLookFor = 30;
+            const daysToLookForTimestamp = utils.formatDateTimestamp(moment().subtract(daysToLookFor, "days"));
 
-            let parameters = {
+            const parameters = {
                 action: "query",
                 list: "recentchanges",
                 rclimit: 500,
                 rcstart: daysToLookForTimestamp, // Timestamp do daysToLookFoor (timeStampToLookFor)
                 rcdir: "newer",
-                rcshow: "!bot", // Ingnora bots
+                rcshow: "!bot" // Ingnora bots
             };
 
             let totalEdits = 0;
@@ -121,7 +122,7 @@ module.exports.updateWiki = (currentWiki = "tf") => {
                                 return;
                             }
 
-                            data["recentchanges"].forEach((edit) => {
+                            data.recentchanges.forEach((edit) => {
                                 totalEdits = totalEdits + 1;
 
                                 if (moment().diff(moment.utc(edit.timestamp), "days") < 7) {
@@ -129,12 +130,18 @@ module.exports.updateWiki = (currentWiki = "tf") => {
                                 }
                             });
 
-                            if (next && next !== undefined) {
-                                logger.verbose(`${currentWiki}: Pegando próxima página das mudanças recentes...`);
-                                parameters["rccontinue"] = next.rccontinue;
+                            if (next) {
+                                // TODO: Implement proper support (Starg pls fix)
+                                if (currentWiki === "ac") {
+                                    logger.warn(`STARGPLSFIX: ${currentWiki}: Getting next recent changes page... (${next.rcstart})`);
+                                    parameters.rcstart = next.rcstart;
+                                } else {
+                                    logger.verbose(`${currentWiki}: Getting next recent changes page... (${next.rccontinue})`);
+                                    parameters.rccontinue = next.rccontinue;
+                                }
                                 callRecentChanges();
                             } else {
-                                logger.verbose(`${currentWiki}: Não há mais mudanças recentes. Encerrando...`);
+                                logger.verbose(`${currentWiki}: There are no more recent changes.`);
                                 callback("STOP");
                             }
                         });
@@ -152,11 +159,11 @@ module.exports.updateWiki = (currentWiki = "tf") => {
         }
 
         function updateWikiModel() {
-            logger.verbose(`${currentWiki}: Updating wiki data (updateWikiModel)`);
+            logger.verbose(`${currentWiki}: Saving wiki data (updateWikiModel)`);
 
             wikiModel.update({
                 alias: currentWiki,
-                w_name: wikiName,
+                w_name: wikiName
             }, {
                 w_pages: wikiPages,
                 w_articles: wikiArticles,
@@ -168,8 +175,10 @@ module.exports.updateWiki = (currentWiki = "tf") => {
                 w_last7: wikiLast7Days,
                 w_last30: wikiLast30Days,
                 w_age: wikiAge,
-                dataLastUpdated: moment().format("x")
-            }, { upsert: true }, (err) => {
+                dataLastUpdated: utils.formatDateTimestamp()
+            }, {
+                upsert: true
+            }, (err) => {
                 if (err) {
                     logger.mongooseerror(`${currentWiki}: Failed to update wiki data: ${err}`);
                     return;
@@ -181,7 +190,9 @@ module.exports.updateWiki = (currentWiki = "tf") => {
         }
 
         function checkWikiData() {
-            wikiModel.find({ w_name: wikiName }).exec((err) => {
+            wikiModel.find({
+                w_name: wikiName
+            }).exec((err) => {
                 if (err) {
                     logger.mongooseerror(`${currentWiki}: Failed to check wiki data (checkWikiData): ${err}`);
                     return;

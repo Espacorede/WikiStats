@@ -1,0 +1,110 @@
+@charset "utf-8";
+
+$dark_background: #212121;
+$dark_header: #000000;
+$dark_button: #000000;
+$dark_button-hover: #303030;
+$dark_text: #fafafa;
+
+.dark {
+    background: $dark_background;
+    color: $dark_text;
+    transition: 0.3s;
+
+    header,
+    .mobile-sidebar {
+        background-color: $dark_header;
+    }
+
+    .btn {
+        background: $dark_button;
+        color: $dark_text !important;
+
+        &:hover {
+            background-color: $dark_button-hover !important;
+        }
+
+        &.header {
+            background-color: $dark_background;
+        }
+    }
+
+    .dropdown {
+        button {
+            background-color: $dark_background;
+        }
+
+        .content {
+            background-color: $dark_button-hover;
+
+            li {
+                a {
+                    color: $dark_text;
+                }
+            }
+        }
+    }
+
+    .header-search {
+        input[type="text"] {
+            border-color: #5f5b5b !important;
+        }
+    }
+
+    .user-normal {
+        color: #fafafab8 !important;
+    }
+
+    // /about
+
+    .answer {
+        color: #fafafab8 !important;
+    }
+
+    // /tops
+
+    .top-alert {
+        color: #ffd700;
+    }
+
+    // tables
+    table {
+        &:not(.header-table) {
+            thead {
+                background-color: #000;
+            }
+
+            tbody {
+                background-color: $dark_button-hover;
+            }
+        }
+    }
+
+    // tab selector
+
+    .tab-selector {
+        .list {
+            border-color: #5f5b5b;
+        }
+    }
+
+    // /
+
+    input[type="text"] {
+        background-color: $dark_button-hover;
+        border-color: $dark_header !important;
+        color: $dark_text !important;
+    }
+
+    hr {
+        background-color: #333;
+    }
+
+    // Temp fix for gChart
+
+    g {
+        text {
+            fill: $dark_text !important;
+        }
+    }
+}

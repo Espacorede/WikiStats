@@ -1,18 +1,19 @@
-/** * (c) Espacorede Project * **/
+/** ** (c) Espacorede Project ** **/
 
 const async = require("async");
-const bot = require("nodemw");
+const Bot = require("nodemw");
 const cachegoose = require("cachegoose");
 const fs = require("fs");
 const logger = require("./logger");
+const utils = require("./utils");
 const moment = require("moment");
 const userModel = require("../models/userModel");
 const WSConfig = require("../configs/wikistats-config.json");
-const port = process.env.PORT || WSConfig["port"];
+const port = process.env.PORT || WSConfig.port;
 const socket = require("socket.io-client")(`http://localhost:${port}`);
 
 module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
-    let MWClient = new bot(`./configs/wikis/${sourceWiki}-config.json`);
+    const MWClient = new Bot(`./configs/wikis/${sourceWiki}-config.json`);
 
     user = user.trim();
     user = user.charAt(0).toUpperCase() + user.slice(1);
@@ -22,35 +23,37 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
             logger.apierror(`${sourceWiki}: getUserInfo returned "${err}" (whois ${user})`);
             return;
         }
-        if (userData.userid) {
+
+        if (userData.userid && !utils.isUserDeleted(user)) {
             userModel.find({
                 u_sourcewiki: sourceWiki,
                 u_name: userData.name
-            }, "u_edits dataLastUpdated updateComplete", (err, data) => {
+            }, "u_edits u_topeditedpages dataLastUpdated updateComplete", (err, data) => {
                 if (err) {
                     logger.mongooseerror(`${sourceWiki}: Failed to search for "${userData.name}" in the database: ${err}`);
                     return;
                 }
 
                 let update = false;
-
                 if (!data || !data[0] || force === 2) {
                     update = true;
-                } else {
-                    if (data.updateComplete !== false) {
-                        if (moment(data[0].dataLastUpdated, "x").isBefore(moment(), "days")) {
-                            if (!force && data[0]["u_edits"] === userData.editcount) {
-                                logger.debug(`${sourceWiki}: User data for "${user}" has been updated recently (u_edits is the same). Aborting...`);
-                            } else {
-                                update = true;
-                            }
+                } else if (data[0].updateComplete === true) {
+                    if (moment(data[0].dataLastUpdated, "x").isBefore(moment(), "days")) {
+                        if (!force && data[0].u_edits === userData.editcount) {
+                            logger.debug(`${sourceWiki}: User data for "${user}" has been updated recently (u_edits is the same). Aborting...`);
                         } else {
-                            if (!force && data[0]["u_edits"] === userData.editcount) {
-                                logger.debug(`${sourceWiki}: User data for "${user}" has been updated recently (dataLastUpdated is recent and u_edits is the same). Aborting...`);
-                            } else {
-                                update = true;
-                            }
+                            update = true;
                         }
+                    } else {
+                        if (!force && data[0].u_edits === userData.editcount) {
+                            logger.debug(`${sourceWiki}: User data for "${user}" has been updated recently (dataLastUpdated is recent and u_edits is the same). Aborting...`);
+                        } else {
+                            update = true;
+                        }
+                    }
+                } else {
+                    if (moment(data[0].dataLastUpdated, "x").isBefore(moment(), "days")) {
+                        update = true;
                     } else {
                         logger.debug(`${sourceWiki}: User "${user}" is already being updated. Aborting...`);
                         return;
@@ -61,13 +64,14 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                     userModel.update({
                         u_sourcewiki: sourceWiki,
                         u_name: userData.name,
-                        u_userid: userData.userid,
+                        u_userid: userData.userid
                     }, {
                         u_registration: userData.registration,
                         u_groups: userData.groups.filter(function (g) {
                             return !userData.implicitgroups.includes(g);
                         }),
-                        updateComplete: false,
+                        dataLastUpdated: utils.formatDateTimestamp(),
+                        updateComplete: false
                     }, {
                         upsert: true
                     }, (err) => {
@@ -83,9 +87,9 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 } else {
                     userModel.update({
                         u_sourcewiki: sourceWiki,
-                        u_name: user,
+                        u_name: user
                     }, {
-                        dataLastUpdated: moment().format("x")
+                        dataLastUpdated: utils.formatDateTimestamp()
                     }, {
                         upsert: true
                     }, (err) => {
@@ -104,8 +108,13 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 u_name: userData.name
             }, function (err) {
                 if (!err) {
-                    logger.debug(`${sourceWiki}: Removed ${user} from database (missing userid)`);
-                    socket.emit("missing", user, sourceWiki);
+                    if (utils.isUserDeleted(user)) {
+                        logger.debug(`${sourceWiki}: Removed ${user} from database (deleted account)`);
+                        socket.emit("deleted", user, sourceWiki);
+                    } else {
+                        logger.debug(`${sourceWiki}: Removed ${user} from database (missing userid)`);
+                        socket.emit("missing", user, sourceWiki);
+                    }
                 }
             });
         }
@@ -118,15 +127,16 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
             logger.debug(`${sourceWiki}: Searching for ${user}'s data.`);
             socket.emit("update", user, sourceWiki);
 
-            let parameters = {
+            const parameters = {
                 action: "query",
                 list: "usercontribs",
                 ucdir: "newer",
                 uclimit: 500,
                 ucuser: user,
+                ucprop: "ids|title|timestamp|comment|size|flags|sizediff"
             };
 
-            let parametersLogsBlocks = {
+            const parametersLogsBlocks = {
                 action: "query",
                 ledir: "newer",
                 lelimit: 500,
@@ -135,7 +145,7 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 list: "logevents"
             };
 
-            let parametersLogsDeletions = {
+            const parametersLogsDeletions = {
                 action: "query",
                 ledir: "newer",
                 lelimit: 500,
@@ -144,7 +154,7 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 list: "logevents"
             };
 
-            let parametersLogsUsersThanked = {
+            const parametersLogsUsersThanked = {
                 action: "query",
                 ledir: "newer",
                 lelimit: 500,
@@ -153,7 +163,7 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 list: "logevents"
             };
 
-            let parametersLogsUserThanks = {
+            const parametersLogsUserThanks = {
                 action: "query",
                 ledir: "newer",
                 lelimit: 500,
@@ -162,24 +172,32 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 list: "logevents"
             };
 
-            const extensions = require(`../data/extensions/${sourceWiki}.json`)["extensions"];
-            const wikiHasThanks = Object.keys(extensions).some((x) => x === "Thanks");
+            const extensions = require(`../data/extensions/${sourceWiki}.json`).extensions;
+            const wikiHasThanks = Object.values(extensions).some((x) => x === "https://www.mediawiki.org/wiki/Extension:Thanks");
 
             let uBlocked = 0;
-            let uContribs = [];
+            const uContribs = [];
             let uDeleted = 0;
             let uMinor = 0;
             let uPageCreations = 0;
             let uUploads = 0;
             let uAllUploads = 0;
-            let uNameSpaces = {};
-            let editedPages = {};
+            const uNameSpaces = {};
+            const editedPages = {};
             let uThanked = 0;
             let uThanks = 0;
+            let uBytes = 0;
+            let uBytesBalance = 0;
+            let uBiggestEdit = {};
+            let uBiggestEditNs0 = {};
+            const uLanguages = {};
 
             function callUserContribs() {
                 logger.verbose(`${sourceWiki}: Fetching contributions for "${user}"...`);
                 socket.emit("update", user, sourceWiki);
+
+                const wikiCfg = require(`../configs/wikis/${sourceWiki}-config.json`);
+                const wikiUrl = `${wikiCfg.protocol}://${wikiCfg.server}${wikiCfg.path === "/" ? "" : wikiCfg.path}`;
 
                 async.whilst(() => true, (callback) => {
                     MWClient.api.call(parameters, (err, data, next) => {
@@ -193,23 +211,23 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             return;
                         }
 
-                        let userContribs = data.usercontribs;
-                        let userContribsLength = userContribs && userContribs.length;
+                        const userContribs = data.usercontribs;
+                        const userContribsLength = userContribs && userContribs.length;
 
                         logger.verbose(`${sourceWiki}: We received ${userContribsLength} contributions for "${user}"`);
 
                         if (userContribsLength > 0) {
                             userContribs.forEach((entry) => {
-                                let eNameSpace = entry.ns;
-                                let ePageTitle = entry.title;
-                                let eTimeStamp = moment.utc(entry.timestamp).format("x");
+                                const eNameSpace = entry.ns;
+                                const ePageTitle = entry.title;
+                                const eTimeStamp = utils.formatDateTimestamp(entry.timestamp);
 
                                 uContribs.push(eTimeStamp);
 
                                 editedPages[ePageTitle] = (editedPages[ePageTitle] || 0) + 1;
 
                                 if (entry.new !== undefined) {
-                                    if (entry.ns === 6) {
+                                    if (entry.ns === 6 && !(/ ?(move[du]|Redirec(ted|ionamento))/).test(entry.comment)) {
                                         uUploads = (uUploads || 0) + 1;
                                     } else {
                                         uPageCreations = (uPageCreations || 0) + 1;
@@ -221,17 +239,54 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                                 }
 
                                 // Somamos isso com o uUploads lá em baixo
-                                if (entry.comment.includes(`${user} uploaded a new version of`)) {
+                                if (entry.ns === 6 && (/(uploaded a new version of|carregou uma nova)/).test(entry.comment)) {
                                     uAllUploads = (uAllUploads || 0) + 1;
                                 }
 
+                                // Verificamos se o título tem um código de idioma
+                                // Somente no namespace principal, não vale a pena contar edits em sandboxes...
+                                // ... ou páginas do tipo
+                                const regexLanguage = new RegExp(/(\/([a-z]{2}(?:-[A-Z]{2,4})?))$/, ["i"]).exec(ePageTitle);
+                                if (entry.ns === 0 && regexLanguage !== null) {
+                                    uLanguages[regexLanguage[2]] = (uLanguages[regexLanguage[2]] || 0) + 1;
+                                }
+
                                 uNameSpaces[eNameSpace] = (uNameSpaces[eNameSpace] || 0) + 1;
+
+                                if (entry.sizediff) {
+                                    uBytes += Math.abs(entry.sizediff);
+                                    uBytesBalance += entry.sizediff;
+
+                                    if (!uBiggestEdit.size || entry.sizediff > uBiggestEdit.size) {
+                                        uBiggestEdit = {
+                                            title: ePageTitle,
+                                            link: `${wikiUrl}/index.php?title=${encodeURIComponent(ePageTitle)}&oldid=${entry.revid}`,
+                                            size: entry.sizediff
+                                        };
+                                    }
+
+                                    // Mesma coisa que o de cima, só que só para o namespace principal
+                                    // Sugerido por Jan - 2020
+                                    if (entry.ns === 0 && (!uBiggestEditNs0.size || entry.sizediff > uBiggestEditNs0.size)) {
+                                        uBiggestEditNs0 = {
+                                            title: ePageTitle,
+                                            link: `${wikiUrl}/index.php?title=${encodeURIComponent(ePageTitle)}&oldid=${entry.revid}`,
+                                            size: entry.sizediff
+                                        };
+                                    }
+                                }
                             });
                         }
 
                         if (next) {
-                            logger.verbose(`${sourceWiki}: Fetching next contributions page for "${user}" [${next.uccontinue}]`);
-                            parameters["uccontinue"] = next.uccontinue;
+                            // TODO: Starg pls fix
+                            if (sourceWiki === "ac") {
+                                logger.warn(`STARGPLSFIX: ${sourceWiki}: Fetching next contributions page for "${user}" [${next.ucstart}]`);
+                                parameters.ucstart = next.ucstart;
+                            } else {
+                                logger.verbose(`${sourceWiki}: Fetching next contributions page for "${user}" [${next.uccontinue}]`);
+                                parameters.uccontinue = next.uccontinue;
+                            }
                             callUserContribs();
                         } else {
                             logger.verbose(`${sourceWiki}: There are no more contributions for "${user}". Finishing with "NOMOR"...`);
@@ -244,7 +299,6 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             getUserDeletions();
                         } else {
                             logger.error(`We received an error other than "NOMOR" (callUserContribs): ${err}`);
-                            return;
                         }
                     }
                 });
@@ -261,8 +315,8 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             return;
                         }
 
-                        let logEvents = data.logevents;
-                        let logEventsLength = logEvents && logEvents.length;
+                        const logEvents = data.logevents;
+                        const logEventsLength = logEvents && logEvents.length;
 
                         logger.verbose(`${sourceWiki}: We received ${logEventsLength} deletion events for "${user}"`);
 
@@ -273,8 +327,14 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                         }
 
                         if (next) {
-                            logger.verbose(`${sourceWiki}: Fetching next page of deletion events for "${user}" [${next.lecontinue}]`);
-                            parametersLogsDeletions["lecontinue"] = next.lecontinue;
+                            // TODO: Implement proper support (Starg pls fix)
+                            if (sourceWiki === "ac") {
+                                logger.warn(`STARGPLSFIX: ${sourceWiki}: Fetching next page of deletion events for "${user}" [${next.lestart}]`);
+                                parametersLogsDeletions.lestart = next.lestart;
+                            } else {
+                                logger.verbose(`${sourceWiki}: Fetching next page of deletion events for "${user}" [${next.lecontinue}]`);
+                                parametersLogsDeletions.lecontinue = next.lecontinue;
+                            }
                             getUserDeletions();
                         } else {
                             logger.verbose(`${sourceWiki}: There's no more deletion events for "${user}". Finishing with "NOMOR"...`);
@@ -287,7 +347,6 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             getUserBlocks();
                         } else {
                             logger.error(`We received an error other than "NOMOR" (getUserDeletions): ${err}`);
-                            return;
                         }
                     }
                 });
@@ -304,8 +363,8 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             return;
                         }
 
-                        let logEvents = data.logevents;
-                        let logEventsLength = logEvents && logEvents.length;
+                        const logEvents = data.logevents;
+                        const logEventsLength = logEvents && logEvents.length;
 
                         logger.verbose(`${sourceWiki}: We received ${logEventsLength} block events for "${user}"`);
 
@@ -316,8 +375,14 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                         }
 
                         if (next) {
-                            logger.verbose(`${sourceWiki}: Fetching next page of block events for "${user}" [${next.lecontinue}]`);
-                            parametersLogsBlocks["lecontinue"] = next.lecontinue;
+                            // TODO: Implement proper support (Starg pls fix)
+                            if (sourceWiki === "ac") {
+                                logger.warn(`STARGPLSFIX: ${sourceWiki}: Fetching next page of deletion events for "${user}" [${next.lestart}]`);
+                                parametersLogsBlocks.lestart = next.lestart;
+                            } else {
+                                logger.verbose(`${sourceWiki}: Fetching next page of block events for "${user}" [${next.lecontinue}]`);
+                                parametersLogsBlocks.lecontinue = next.lecontinue;
+                            }
                             getUserBlocks();
                         } else {
                             logger.verbose(`${sourceWiki}: There's no more block events for "${user}". Finishing with "NOMOR"...`);
@@ -334,7 +399,6 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             }
                         } else {
                             logger.error(`We received an error other than "NOMOR" (getUserBlocks): ${err}`);
-                            return;
                         }
                     }
                 });
@@ -351,8 +415,8 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             return;
                         }
 
-                        let logEvents = data.logevents;
-                        let logEventsLength = logEvents && logEvents.length;
+                        const logEvents = data.logevents;
+                        const logEventsLength = logEvents && logEvents.length;
 
                         logger.verbose(`${sourceWiki}: We received ${logEventsLength} thanks received for "${user}"`);
 
@@ -364,7 +428,7 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
 
                         if (next) {
                             logger.verbose(`${sourceWiki}: Fetching next page of thanks received for "${user}" [${next.lecontinue}]`);
-                            parametersLogsUsersThanked["lecontinue"] = next.lecontinue;
+                            parametersLogsUsersThanked.lecontinue = next.lecontinue;
                             getUsersThanked();
                         } else {
                             logger.verbose(`${sourceWiki}: There's no more thanks received for "${user}". Finishing with "NOMOR"...`);
@@ -377,7 +441,6 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             getUserThanks();
                         } else {
                             logger.error(`We received an error other than "NOMOR" (getUsersThanked): ${err}`);
-                            return;
                         }
                     }
                 });
@@ -394,20 +457,23 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             return;
                         }
 
-                        let logEvents = data.logevents;
-                        let logEventsLength = logEvents && logEvents.length;
+                        const logEvents = data.logevents;
+                        const logEventsLength = logEvents && logEvents.length;
 
                         logger.verbose(`${sourceWiki}: We received ${logEventsLength} thanks for "${user}"`);
 
                         if (logEventsLength > 0) {
-                            logEvents.forEach(() => {
-                                uThanks = (uThanks || 0) + 1;
+                            logEvents.forEach(t => {
+                                // weapon of mass destruction
+                                if (t.user !== "KaliEestiLinux") {
+                                    uThanks = (uThanks || 0) + 1;
+                                }
                             });
                         }
 
                         if (next) {
                             logger.verbose(`${sourceWiki}: Fetching next page of thanks for "${user}" [${next.lecontinue}]`);
-                            parametersLogsUserThanks["lecontinue"] = next.lecontinue;
+                            parametersLogsUserThanks.lecontinue = next.lecontinue;
                             getUserThanks();
                         } else {
                             logger.verbose(`${sourceWiki}: There's no more thanks for "${user}". Finishing with "NOMOR"...`);
@@ -420,7 +486,6 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             updateUserModel();
                         } else {
                             logger.error(`We received an error other than "NOMOR" (getUserThanks): ${err}`);
-                            return;
                         }
                     }
                 });
@@ -430,27 +495,32 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 logger.debug(`${sourceWiki}: Updating data for "${user}" (updateUserModel)`);
                 socket.emit("update", user, sourceWiki);
 
-                let maxEdits = Math.max.apply(null, Object.values(editedPages));
+                const maxEdits = Math.max.apply(null, Object.values(editedPages));
 
                 async.filter(Object.keys(editedPages), (x, callback) => {
                     callback(null, (editedPages[x] === maxEdits));
                 }, (err, res) => {
                     if (err) {
                         logger.error(`${sourceWiki}: Failed to calculate most edited pages for "${user}" (updateUserModel): ${err}`);
-                        return;
                     } else {
-                        let uTopPages = res;
-                        uTopPages.sort();
-                        uTopPages.unshift(editedPages[uTopPages[0]]);
+                        const topEdits = res;
+                        // topEdits.sort();
+                        const topFour = topEdits.splice(0, 5);
+                        const uTopPages = {
+                            pages: topFour,
+                            count: editedPages[topFour[0]],
+                            remainder: topEdits.length
+                        };
 
-                        let uUniquePages = Object.keys(editedPages).length;
+                        const uUniquePages = Object.keys(editedPages).length;
 
                         userModel.update({
                             u_sourcewiki: sourceWiki,
-                            u_name: user,
+                            u_name: user
                         }, {
                             u_contribs: uContribs,
                             u_edits: edits,
+                            u_editsws: uContribs.length - (uUploads + uPageCreations),
                             u_pagecreations: uPageCreations,
                             u_uniquepages: uUniquePages,
                             u_uploads: uUploads,
@@ -462,7 +532,12 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                             u_topeditedpages: uTopPages,
                             u_thanks: uThanks,
                             u_thanked: uThanked,
-                            dataLastUpdated: moment().format("x"),
+                            u_bytes: uBytes,
+                            u_bytesbalance: uBytesBalance,
+                            u_biggestedit: uBiggestEdit,
+                            u_biggesteditns0: uBiggestEditNs0,
+                            u_languagedits: uLanguages,
+                            dataLastUpdated: utils.formatDateTimestamp(),
                             updateComplete: true
                         }, {
                             upsert: true
@@ -479,40 +554,44 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                 });
             }
 
-            let list = require("../data/userqueue.json");
-
-            if (list["users"].some(u => u.name === user && u.wiki === sourceWiki)) {
-                if (!force) {
-                    logger.debug(`${sourceWiki}: User "${user}" is already being updated. Aborting...`);
-                    return;
+            fs.readFileSync("./data/userqueue.json", (err, data) => {
+                if (err) {
+                    logger.error(`${sourceWiki}: Failed to read user queue: ${err}`);
                 }
-            } else {
-                let update = list["users"];
-                update.push({
-                    "name": user,
-                    "wiki": sourceWiki
-                });
-
-                fs.writeFile("./data/userqueue.json", JSON.stringify({
-                    users: update
-                }, null, 2), (err) => {
-                    if (err) {
-                        logger.error(`${sourceWiki}: Failed to add user "${user}" to the update queue: ${err}`);
-                        return;
+                const list = JSON.parse(data);
+                if (list.users.some(u => u.name === user && u.wiki === sourceWiki)) {
+                    if (!force) {
+                        logger.debug(`${sourceWiki}: User "${user}" is already being updated. Aborting...`);
                     }
+                } else {
+                    const update = list.users;
+                    update.push({
+                        name: user,
+                        wiki: sourceWiki
+                    });
 
-                    logger.verbose(`${sourceWiki}: User "${user}" was added to the update queue.`);
-                });
-            }
+                    fs.writeFileSync("./data/userqueue.json", JSON.stringify({
+                        users: update
+                    }), (err) => {
+                        if (err) {
+                            logger.error(`${sourceWiki}: Failed to add user "${user}" to the update queue: ${err}`);
+                            return;
+                        }
+
+                        logger.verbose(`${sourceWiki}: User "${user}" was added to the update queue.`);
+                    });
+                }
+            });
 
             try {
                 callUserContribs();
             } catch (me) {
                 logger.error(`${sourceWiki}: There was an unexpected error updating ${user}'s data! Aborting...`);
+                logger.verbose(me);
             } finally {
                 userModel.update({
                     u_sourcewiki: sourceWiki,
-                    u_name: user,
+                    u_name: user
                 }, {
                     updateComplete: true
                 }, {
@@ -522,15 +601,40 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
                         logger.mongooseerror(`${sourceWiki}: Failed to update user data for ${user} (getUserContribs finally): ${err}`);
                         return;
                     }
+
                     logger.verbose(`${sourceWiki}: updateComplete for user "${user}" set to true.`);
                 });
+
+                fs.readFileSync("./data/userqueue.json", (err, data) => {
+                    if (err) {
+                        logger.error(`${sourceWiki}: Failed to read user queue: ${err}`);
+                    }
+                    const queue = JSON.parse(data);
+                    let users = queue.users;
+
+                    // Remove o usuário da fila
+                    users = users.filter(function (u) {
+                        return u.name !== user; // && u.wiki !== sourceWiki;
+                    });
+
+                    // Salva a nova fila
+                    fs.writeFileSync("./data/userqueue.json", JSON.stringify({
+                        users: users
+                    }), (err) => {
+                        if (err) {
+                            logger.error(`${sourceWiki}: Failed to remove user "${user}" from the update queue: ${err}`);
+                            return;
+                        }
+
+                        logger.debug(`${sourceWiki}: User "${user}" was removed from the update queue.`);
+                    });
+                });
+
+                socket.emit("load", user, sourceWiki);
             }
         }
 
         function verifyUserData(user) {
-            let queue = require("../data/userqueue.json");
-            let users = queue["users"];
-
             socket.emit("update", user, sourceWiki);
 
             userModel.find({
@@ -546,25 +650,6 @@ module.exports.getUserInfo = (user, force = 0, sourceWiki = "tf") => {
 
                 // Apaga o cache
                 cachegoose.clearCache(`${sourceWiki}user-${user}`);
-
-                // Remove o usuário da fila
-                users = users.filter(function (u) {
-                    return u.name !== user; // && u.wiki !== sourceWiki;
-                });
-
-                // Salva a nova fila
-                fs.writeFileSync("./data/userqueue.json", JSON.stringify({
-                    "users": users
-                }, null, 2), (err) => {
-                    if (err) {
-                        logger.error(`${sourceWiki}: Failed to remove user "${user}" from the update queue: ${err}`);
-                        return;
-                    }
-
-                    logger.debug(`${sourceWiki}: User "${user}" was removed from the update queue.`);
-                });
-
-                socket.emit("load", user, sourceWiki);
             });
         }
     }

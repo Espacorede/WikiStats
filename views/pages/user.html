@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{#unless wTheme}}
+    <meta name="theme-color" content="{{ wTheme }}">
+    {{/unless}}
+    <meta property="og:title" content="{{ user }}'s Statistics · {{ wName }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Wiki Stats">
+    <meta property="og:url" content="{{ webHostCanonical }}/user/{{ wAlias }}/{{ user }}">
+    {{#if mEdits}}
+    <meta property="og:description"
+        content="{{ user }} has a total of {{ mEdits }} contributions with an average of {{ mEditsAvg }} edits per day on {{ wName }}.">
+    <meta name="Description"
+        content="{{ user }} has a total of {{ mEdits }} contributions with an average of {{ mEditsAvg }} edits per day on {{ wName }}.">
+    {{/if}}
+    <meta property="og:image" content="{{ webHost }}/images/wikis/logo-{{ wAlias }}.png">
+    <link rel="canonical" href="{{ webHostCanonical }}/user/{{ wAlias }}/{{ user }}" />
+    <link href="{{ webHost }}/images/wikis/favicon-{{ wAlias }}.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/preprocessed/userpage.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/wikis/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/third_party/fa_wikistats.css" rel="stylesheet" type="text/css" />
+    <script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>
+    <script src="{{ webHost }}/socket.io/socket.io.js" type="text/javascript"></script>
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <script src="{{ webHost }}/javascript/userpagev2.js" type="text/javascript"></script>
+    <title>{{ user }} - {{ wName }} | Wiki Stats</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="container text-center">
+
+        <div class="spacer-small"></div>
+
+        <!-- Begin tab selector -->
+        <div id="tab-select" class="tab-selector hidden">
+            <span id="tab-list" class="list">
+                <span class="tab tab-selected" id="tab-info" onclick="selectTab('info')">General</span>
+                <span class="tab" id="tab-graphs" onclick="selectTab('graphs')">Graphs</span>
+                <span class="tab" id="tab-achievements" onclick="selectTab('achievements')">Achievements <small
+                        id="achievements-count">(0)</small></span>
+            </span>
+        </div>
+        <!-- End tab selector -->
+        <!-- Begin section 1 -->
+        <div class="tab-content" id="info">
+            <!-- User info -->
+            <h1 class="text-headline user-name">
+                <a class="user-url" title="View {{ user }}'s userpage on {{ wName }}" target="_blank">{{ user }}</a>
+                <small id="user-registration-full">
+                    registered on
+                    <span id="user-registration">
+                        MMMM D, YYYY
+                    </span>
+                    (<span id="user-registration-from-now" class="tooltip">? years ago</span>)
+                </small>
+            </h1>
+
+            <!-- Page notice -->
+            <div id="user-notices" class="user-notices">
+                <span class="updating hidden" id="updating">
+                    Updating... <small class="lost-connection-update">⚠️ Connection lost!</small>
+                </span><br>
+                <small class="bot hidden" id="bot-note">
+                    ⚠️ This user has a lot of edits.
+                    Their stats are only updated once per day and may be slightly outdated.
+                </small>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-box">
+                <!-- Left area -->
+                <div class="stats" id="sstats-left">
+                    <!-- Begin contribs -->
+                    <p>
+                        Total contributions:
+                        <b>
+                            <a id="user-total-edits" title="View all contributions" target="_blank">
+                                ?
+                            </a>
+                            <span id="user-total-edits-minus-creations"
+                                title="Deducting page creations and file uploads" class="tooltip">
+                                (Edits: ?)
+                            </span>
+                        </b>
+                    </p>
+
+                    <p>
+                        Total edits
+                        (<span title="Please see the FAQ for more information" class="tooltip">MediaWiki</span>):
+                        <b id="user-total-edits-mediawiki">
+                            ?
+                        </b>
+                    </p>
+
+                    <p>
+                        Minor edits:
+                        <b id="user-minor-edits">
+                            ?
+                        </b>
+                    </p>
+
+                    <p>
+                        Pages created:
+                        <b>
+                            <a id="user-pages-created" title="View all page creations" target="_blank">
+                                ?
+                            </a>
+                        </b>
+                    </p>
+                    <!-- End contribs -->
+                    <!-- Begin uploads -->
+                    <p>
+                        Files uploaded:
+                        <b>
+                            <a id="user-uploads-plus-new-versions" title="View all uploads" target="_blank">
+                                ?
+                            </a>
+                            <span id="user-uploads"
+                                title="Deducting file uploads that were uploaded as a new version of an existing file."
+                                class="tooltip">
+                                (New uploads: 0)
+                            </span>
+                        </b>
+                    </p>
+                    <!-- End uploads -->
+                    <!-- Begin bytes -->
+                    <p id="sstat-bytes">
+                        Total bytes changed:
+                        <b id="user-bytes" class="tooltip">
+                            ?.? kB
+                        </b>
+                    </p>
+
+                    <p id="sstat-bytes-average">
+                        Average bytes/edit:
+                        <b id="user-bytesavg" class="tooltip">
+                            +?.? kB
+                        </b>
+                    </p>
+
+                    <p id="sstat-bytes-balance">
+                        Bytes balance:
+                        <b id="user-bytes-balance" class="tooltip">
+                            +?.? kB
+                        </b>
+                    </p>
+                    <!-- End bytes -->
+                    <!-- Begin biggest edit -->
+                    <div id="user-biggest-edit-p">
+                        <p>Biggest edit:</p>
+
+                        <div class="stats-offset-right">
+                            Overall:
+                            <a id="user-biggest-edit">User:PhoneWave</a>
+                            <b>(<span id="user-biggest-edit-size" class="tooltip">?.? kB</span>)</b>
+                        </div>
+                        <div class="stats-offset-right" id="user-biggest-editns0">
+                            <br>
+                            Main Namespace:
+                            <a id="user-biggest-editns0-link">Unknown Article</a>
+                            <b>(<span id="user-biggest-editns0-size" class="tooltip">?.? kB</span>)</b>
+                        </div>
+                    </div>
+                    <!-- End biggest edit -->
+                    <!-- Begin Most edited -->
+                    <p id="user-top-pages-area" style="text-justify: none">
+                        Most edited page<span id="plural"></span>:
+
+                    <div class="stats-offset-right">
+                        <b id="user-top-pages">
+                            <a>Unknown Article</a> (? edits)
+                        </b>
+                    </div>
+                    </p>
+                    <!-- End most edited -->
+                    <!-- Begin extension:thanks -->
+                    <div id="wiki-has-thanks" class="hidden">
+                        <p>
+                            Thanks given:
+                            <b id="user-thanks-given">
+                                ?
+                            </b>
+                        </p>
+
+                        <p>
+                            Thanks received:
+                            <b id="user-thanks-received">
+                                ?
+                            </b>
+                        </p>
+                    </div>
+                    <!-- End extension:thanks -->
+                </div>
+
+                <!-- Right area -->
+                <div class="stats" id="sstats-right">
+                    <!-- Begin single day overall -->
+                    <p>
+                        Largest number of edits in a day:
+                        <b id="user-most-edits-in-a-single-day">?</b>
+                        <small id="user-most-edits-date" class="tooltip">? years ago</small>
+                    </p>
+                    <!-- End single day overall -->
+                    <!-- Begin unique pages -->
+                    <p>
+                        Unique pages edited:
+                        <b id="user-unique-pages">?</b>
+                    </p>
+                    <!-- End unique pages -->
+                    <!-- Begin edit streak -->
+                    <div>
+                        <p>Edit streak:</p>
+                        <div class="stats-offset-left">
+                            <p>
+                                <b id="user-streak-count-current-b">
+                                    <span id="user-streak-count-current">?</span>
+                                    day<span id="user-streak-current-plural"></span>
+                                </b>
+
+                                current
+                            </p>
+                        </div>
+                        <div class="stats-offset-left">
+                            <p>
+                                <b id="user-streak-count-b">
+                                    <span id="user-streak-count">?</span>
+                                    day<span id="user-streak-plural"></span>
+                                </b>
+
+                                longest
+                            </p>
+                        </div>
+                    </div>
+                    <!-- End edit streak -->
+                    <!-- Brgin edits per day -->
+                    <div>
+                        <p>Contribution numbers:</p>
+                        <div class="stats-offset-left">
+                            <p>
+                                <b id="user-edits-last-7">
+                                    ?
+                                </b>
+
+                                last 7 days
+                            </p>
+                        </div>
+                        <div class="stats-offset-left">
+                            <p>
+                                <b id="user-edits-last-30">
+                                    ?
+                                </b>
+
+                                last 30 days
+                            </p>
+                        </div>
+                        <div class="stats-offset-left">
+                            <p>
+                                <b id="user-edits-last-semester">
+                                    ?
+                                </b>
+                                last 6 months
+                            </p>
+                        </div>
+                        <div class="stats-offset-left">
+                            <p>
+                                <b id="user-edits-last-year">
+                                    ?
+                                </b>
+
+                                last 12 months
+                            </p>
+                        </div>
+                        <div class="stats-offset-left" id="sstat-avgalltime">
+                            <p>
+                                <i>
+                                    <b id="user-edits-alltime">
+                                        ?
+                                    </b>
+                                </i>
+
+                                average per day since joining
+                            </p>
+                        </div>
+                    </div>
+                    <!-- End edits per day -->
+                    <!-- Begin sysop actions -->
+                    <div id="user-has-rights" class="hidden">
+                        <p>
+                            Deletions:
+                            <b id="user-delete-count">
+                                ?
+                            </b>
+                        </p>
+
+                        <p>
+                            Blocks:
+                            <b id="user-block-count">
+                                ?
+                            </b>
+                        </p>
+                    </div>
+                    <!-- End sysop actions -->
+                </div>
+
+            </div>
+        </div>
+        <!-- End section 1-->
+        <!-- Begin section 2 - graphs -->
+        <div class="tab-content" id="graphs">
+            <h1 class="text-headline">
+                <a class="user-url" title="View {{ user }}'s userpage on {{ wName }}" target="_blank">{{ user }}</a>'s
+                Graphs
+            </h1>
+
+            <!-- Timeline -->
+            <div>
+                <p class="text-subtitle" id="timeline">Edits timeline</p>
+                <div id="timeline-select-year"></div>
+                <div id="timeline-select-month"></div>
+                <div id="edits-timeline">
+                    Loading...
+                </div>
+            </div>
+
+            <!-- Namespace -->
+            <div>
+                <p class="text-subtitle" id="namespace">Edits by namespace</p>
+                <div id="edits-byns">
+                    Loading...
+                </div>
+            </div>
+
+            <!-- Hours / Week -->
+            <small id="timezone-note">All times are in Coordinated Universal Time (UTC)</small>
+
+            <div>
+                <p class="text-subtitle" id="hour">Edits per hour of the day</p>
+                <div id="edits-hours" class="graph-small">
+                    Loading...
+                </div>
+
+                <p class="text-subtitle" id="day">Edits per day of the week</p>
+                <div id="edits-week" class="graph-small">
+                    Loading...
+                </div>
+            </div>
+
+            <div>
+                <p class="text-subtitle" id="week">Edits per day of the week and hour</p>
+                <div id="week-hour-select">
+                </div>
+                <div id="edits-wh" class="graph-big">
+                    Loading...
+                </div>
+            </div>
+
+            <!-- Months / Year -->
+            <div>
+                <p class="text-subtitle" id="month">Edits per month</p>
+                <div id="edits-month" class="graph-small">
+                    Loading...
+                </div>
+                <p class="text-subtitle" id="year">Edits per year</p>
+                <div id="edits-year" class="graph-small">
+                    Loading...
+                </div>
+            </div>
+
+            <!-- Lang -->
+            <div id="wmultilanguagesupport">
+                <p class="text-subtitle" id="Language">Edits by language</p>
+                <div id="edits-bylang">
+                    Loading...
+                </div>
+            </div>
+        </div>
+        <!-- End section 2 -->
+        <!-- Begin section 3 - achievements -->
+        <div class="tab-content" id="achievements">
+            <h1 class="text-headline">
+                <a class="user-url" title="View {{ user }}'s userpage on {{ wName }}" target="_blank">{{ user }}</a>'s
+                Achievements
+            </h1>
+
+            <br>
+
+            <span id="achievement-loading">Loading achievement data...</span>
+            <div id="achievement-grid" class="achievement-grid">
+            </div>
+        </div>
+        <!-- End section 3 -->
+        <!-- Begin preloader -->
+        <div class="tab-content partial" id="preloader" style="display: block;">
+            <div class="spacer"></div>
+            <div class="container text-center">
+                {{#if helpers.wIsDefault}}
+                <img class="otfwlogo otfwlogoslow active" title="{{ wName }} Logo"
+                    src="{{ webHost }}/images/wikis/logo-tf.png">
+                {{^}}
+                <img class="wlogo" title="{{ wName }} Logo" src="{{ webHost }}/images/wikis/logo-{{ wAlias }}.png">
+                {{/if}}
+                <br><br>
+                <div class="text-headline">
+                    {{#if helpers.wIsDefault}}
+                    Calling Miss Pauling
+                    {{^}}
+                    Loading statistics
+                    {{/if}}
+                    <br>
+                    <span class="dots"></span>
+                    <!--
+                    <br>
+                    <small class="lost-connection" style="font-size: 0.5em;">⚠️ Connection lost!</small>-->
+                </div>
+                <!--
+                <div id="loading-bot">Loading graphs
+                    <br> &nbsp;
+                    <span class="dots"></span>
+                </div>-->
+            </div>
+        </div>
+        <!-- End preloader -->
+        <!-- Begin error message -->
+        <div class="tab-content user-error" id="error">
+            <img src="{{ webHost }}/images/banana-peel.png">
+
+            <div class="text-display1 error-code">
+                Banana Error #404
+            </div>
+
+            <div class="text-subtitle error-title">
+                "{{ user }}" is not registered, is invalid or is missing from our database.
+            </div>
+
+            <div class="text-subhead error-message">
+                Or else the page will automatically reload once the update process is finished.
+                <br>
+                Keep in mind that MediaWiki user names are case sensitive!<span class="similar-user"></span>
+            </div>
+        </div>
+        <!-- End error message -->
+    </div>
+
+</body>
+
+</html>

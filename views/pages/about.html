@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#3498DB">
+    <meta property="og:title" content="About · Wiki Stats">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Wiki Stats">
+    <meta property="og:url" content="{{ webHostCanonical }}/about">
+    <meta property="og:description" content="Wiki Stats, a website for viewing data about wiki editors.">
+    <meta name="Description" content="Wiki Stats, a website for viewing data about wiki editors.">
+    <link rel="canonical" href="{{ webHostCanonical }}/about" />
+    <link href="{{ webHost }}/images/wikis/favicon-tf.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/preprocessed/about.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/third_party/fa_wikistats.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <title>About | Wiki Stats</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="container text-center">
+        <div class="text-justify">
+            <h1 class="text-title">About</h1>
+
+            <div id="about" class="about">
+                <div class="intro">
+                    <p>Wiki Stats is a spiritual successor of TF2Wiki's
+                        <a rel="noopener noreferrer"
+                            href="https://web.archive.org/web/20160802192949/http://stats.wiki.tf/"
+                            target="_blank">Wiki-Fi</a>, but unlike the original website, it only has data about users.
+                    </p>
+
+                    <p>The source code is available on
+                        <a href="/github" target="_blank">GitHub</a>
+                        <small>and on <a href="/gitlab" target="_blank">GitLab</a></small>.
+                    </p>
+
+                    <p>This instance supports the following wikis:</p>
+                    <ul class="supported-wikis">
+                        {{#each pWikis }}
+                        <li>
+                            <a rel="noopener noreferrer" href="{{ url }}" title="View {{ name }}" target="_blank">
+                                {{ name }}
+                            </a>
+                            &ndash;
+                            <a href="{{ webHost }}/wiki/{{ path }}" title="View {{ name }} on Wiki Stats">
+                                {{ path }}
+                            </a>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+
+            <h1 class="text-title">FAQ</h1>
+
+            <div id="faq" class="faq">
+                <div class="question">How do I report a bug / suggest something?</div>
+                <div class="answer">
+                    You can open an <a href="/github">issue on GitHub</a> or send a private message to "Tark" on
+                    <a href="https://freenode.net">Freenode</a>.
+                </div>
+
+                <div class="question">My total contributions are different from what my preferences page says it is,
+                    what
+                    gives?
+                </div>
+                <div class="answer">
+                    In short, only visible edits are counted.
+                    <br>
+                    MediaWiki often doesn't update the edit count during certain operations, such as uploads or
+                    deletions, and we don't support the <a
+                        href="https://www.mediawiki.org/wiki/Extension:StructuredDiscussions">Flow</a> extension.
+                </div>
+
+                <div class="question">Why is my thanks/deletion/block count wrong or outdated?</div>
+                <div class="answer">
+                    Log data only gets updated if the edit count changes, so it won't update unless you make something
+                    that MediaWiki recognizes as a contribution.
+                </div>
+
+                <div class="question">How often are stats updated?</div>
+                <div class="answer">
+                    Users: On demand.
+                    <p>Wikis: Hourly.</p>
+                    <p>Lists: Hourly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="spacer"></div>
+    </div>
+
+</body>
+
+</html>

@@ -1,4 +1,4 @@
-/** * (c) Espacorede Project * **/
+/** ** (c) Espacorede Project ** **/
 
 const fs = require("fs");
 const moment = require("moment");
@@ -6,38 +6,55 @@ const logger = require("./logger");
 const utils = require("./utils");
 
 module.exports.processUser = (data) => {
-    let user = utils.returnCleanUsername(data.u_name);
+    const user = utils.returnCleanUsername(data.u_name);
 
-    logger.debug(`${data.u_sourcewiki}: Processing data for "${user}"...`);
+    if (utils.isUserDeleted(user)) {
+        logger.warn(`${data.u_sourcewiki}: Failed to process data for "${user}": account is deleted`);
+        return;
+    } else {
+        logger.debug(`${data.u_sourcewiki}: Processing data for "${user}"...`);
+    }
 
     if (!fs.existsSync("./data/processqueue.json") || !fs.statSync("./data/processqueue.json").size) {
         logger.verbose("Creating processqueue.json...");
 
         try {
-            fs.writeFileSync("./data/processqueue.json", JSON.stringify({ users: [{ user: user, wiki: data.u_sourcewiki }] }, null, 2));
+            fs.writeFileSync("./data/processqueue.json", JSON.stringify({
+                users: [{
+                    user: user,
+                    wiki: data.u_sourcewiki
+                }]
+            }, null));
             logger.verbose(`${data.u_sourcewiki}: processqueue.json created with "${user}"`);
         } catch (err) {
             logger.error(`${data.u_sourcewiki}: Failed to create processqueue.json with "${user}": ${err}`);
             return;
         }
     } else {
-        let queue = require("../data/processqueue.json").users;
-
-        if (queue.includes(user)) {
-            logger.error(`${data.u_sourcewiki}: User "${user}" is already being processed.`);
-            return;
-        } else {
-            logger.verbose(`${data.u_sourcewiki}: Adding "${user}" to the processing queue...`);
-            queue.push({ user: user, wiki: data.u_sourcewiki });
-
-            try {
-                fs.writeFileSync("./data/processqueue.json", JSON.stringify({ users: queue }, null, 2));
-                logger.verbose(`${data.u_sourcewiki}: User "${user}" was added to the processing queue!`);
-            } catch (err) {
-                logger.error(`${data.u_sourcewiki}: Failed to add "${user}" to the processing queue: ${err}`);
-                return;
+        fs.readFileSync("./data/processqueue.json", (err, data) => {
+            if (err) {
+                logger.error(`${data.u_sourcewiki}: Failed to read process queue: ${err}`);
             }
-        }
+            const queue = JSON.parse(data).users;
+            if (queue.includes(user)) {
+                logger.error(`${data.u_sourcewiki}: User "${user}" is already being processed.`);
+            } else {
+                logger.verbose(`${data.u_sourcewiki}: Adding "${user}" to the processing queue...`);
+                queue.push({
+                    user: user,
+                    wiki: data.u_sourcewiki
+                });
+
+                try {
+                    fs.writeFileSync("./data/processqueue.json", JSON.stringify({
+                        users: queue
+                    }, null));
+                    logger.verbose(`${data.u_sourcewiki}: User "${user}" was added to the processing queue!`);
+                } catch (err) {
+                    logger.error(`${data.u_sourcewiki}: Failed to add "${user}" to the processing queue: ${err}`);
+                }
+            }
+        });
     }
 
     try {
@@ -46,11 +63,11 @@ module.exports.processUser = (data) => {
         let last6MonthsEdits = 0;
         let lastYearEdits = 0;
         let longestStreak = {};
-        let streak = {};
+        const streak = {};
         let currentStreak = {};
-        let contributionsDictionary = {};
-        let contributionsByDay = [];
-        let contributionsWeekAndHour = [
+        const contributionsDictionary = {};
+        const contributionsByDay = [];
+        const contributionsWeekAndHour = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -63,26 +80,26 @@ module.exports.processUser = (data) => {
 
         let previousDate;
 
-        let userEdits = data.u_contribs.length;
+        const userEdits = data.u_contribs.length;
 
-        let streakIsLongest = () => (streak.end &&
-         longestStreak.end.diff(longestStreak.start, "days") <
-         streak.end.diff(streak.start, "days"));
+        const streakIsLongest = () => (streak.end &&
+            longestStreak.end.diff(longestStreak.start, "days") <
+            streak.end.diff(streak.start, "days"));
 
-        let checkCurrentStreak = () => {
+        const checkCurrentStreak = () => {
             if (moment.utc().diff(streak.end, "days") < 2) {
                 currentStreak = Object.assign({}, streak);
             }
         };
 
-        let convertStreakToString = (streak) => {
+        const convertStreakToString = (streak) => {
             streak.start = streak.start._d;
             streak.end = streak.end._d;
         };
 
-        let addDate = (contributionDate) => {
-            let previousDate = moment.utc(contributionDate.date);
-            let yearNumber = moment.utc().year() - previousDate.year();
+        const addDate = (contributionDate) => {
+            const previousDate = moment.utc(contributionDate.date);
+            const yearNumber = moment.utc().year() - previousDate.year();
 
             if (!contributionsByDay[yearNumber]) {
                 contributionsByDay[yearNumber] = {};
@@ -91,14 +108,15 @@ module.exports.processUser = (data) => {
             if (!contributionsByDay[yearNumber][previousDate.month()]) {
                 contributionsByDay[yearNumber][previousDate.month()] = {};
             }
+
             contributionsByDay[yearNumber][previousDate.month()][previousDate.date()] = contributionDate.contribs;
         };
 
-        for (let element of data.u_contribs) {
-            let contributionDate = moment.utc(element, "x");
+        for (const element of data.u_contribs) {
+            const contributionDate = moment.utc(element, "x");
 
             // Convert date
-            let date = contributionDate.format("DD-MM-YYYY");
+            const date = contributionDate.format("DD-MM-YYYY");
 
             if (previousDate && date !== previousDate.dateFmt) {
                 addDate(previousDate);
@@ -122,13 +140,13 @@ module.exports.processUser = (data) => {
                 lastYearEdits += 1;
             }
 
-            let contributionHour = Number(contributionDate.format("HH"));
-            let contributionWeekDay = contributionDate.format("e");
+            const contributionHour = Number(contributionDate.format("HH"));
+            const contributionWeekDay = contributionDate.format("e");
 
             contributionsWeekAndHour[contributionWeekDay][contributionHour] = (contributionsWeekAndHour[contributionWeekDay][contributionHour] || 0) + 1;
 
-            let contributionYear = contributionDate.format("YYYY") - 2010;
-            let contributionMonth = Number(contributionDate.format("M")) - 1;
+            const contributionYear = contributionDate.format("YYYY") - 2010;
+            const contributionMonth = Number(contributionDate.format("M")) - 1;
 
             if (!contributionsByYearAndMonth[contributionYear]) {
                 contributionsByYearAndMonth[contributionYear] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -136,7 +154,7 @@ module.exports.processUser = (data) => {
 
             contributionsByYearAndMonth[contributionYear][contributionMonth] = contributionsByYearAndMonth[contributionYear][contributionMonth] + 1;
 
-            let lastEditDateMoments = {};
+            const lastEditDateMoments = {};
 
             lastEditDateMoments.current = moment(contributionDate.format("DD-MM-YYYY"), "DD-MM-YYYY");
 
@@ -144,7 +162,7 @@ module.exports.processUser = (data) => {
                 lastEditDateMoments.last = moment(previousDate.date.format("DD-MM-YYYY"), "DD-MM-YYYY");
             }
 
-            let dateDifference = lastEditDateMoments.last ? lastEditDateMoments.current.diff(lastEditDateMoments.last, "day") : 0;
+            const dateDifference = lastEditDateMoments.last ? lastEditDateMoments.current.diff(lastEditDateMoments.last, "day") : 0;
 
             if (dateDifference) {
                 if (!streak.start) {
@@ -177,28 +195,28 @@ module.exports.processUser = (data) => {
         if (!streak.start) {
             streak.start = moment(previousDate.date.format("DD-MM-YYYY"), "DD-MM-YYYY");
         }
+
         if (!streak.end) {
             streak.end = moment(previousDate.date.format("DD-MM-YYYY"), "DD-MM-YYYY");
         }
         checkCurrentStreak();
 
         if (!longestStreak.start || !longestStreak.end || streakIsLongest()) {
-            if (streak) {
-                longestStreak = Object.assign({}, streak);
-            }
+            longestStreak = Object.assign({}, streak);
         }
 
-        let longestStreakCount = utils.formatNumber(longestStreak.end ? longestStreak.end.diff(longestStreak.start, "day") + 1 : 0);
-        let currentStreakCount = utils.formatNumber(currentStreak.end ? currentStreak.end.diff(currentStreak.start, "day") + 1 : 0);
+        const longestStreakCount = utils.formatNumber(longestStreak.end ? longestStreak.end.diff(longestStreak.start, "day") + 1 : 0);
+        const currentStreakCount = utils.formatNumber(currentStreak.end ? currentStreak.end.diff(currentStreak.start, "day") + 1 : 0);
 
         convertStreakToString(longestStreak);
+
         if (currentStreak.end) {
             convertStreakToString(currentStreak);
         }
 
-        let mostEditsOnASingleDay = Object.keys(contributionsDictionary).reduce((a, b) => contributionsDictionary[a] > contributionsDictionary[b] ? a : b);
+        const mostEditsOnASingleDay = Object.keys(contributionsDictionary).reduce((a, b) => contributionsDictionary[a] > contributionsDictionary[b] ? a : b);
 
-        let registrationInDays = moment().diff(moment(data.u_registration, "YYYYMMDD"), "days");
+        const registrationInDays = moment().diff(moment(data.u_registration, "YYYYMMDD"), "days");
 
         while (contributionsByYearAndMonth.length < moment.utc().year() - 2009) {
             contributionsByYearAndMonth.push(null);
@@ -211,78 +229,73 @@ module.exports.processUser = (data) => {
             }
         }
 
-        // Name color
-        const bots = require(`../data/lists/${data.u_sourcewiki}-bots.json`);
-
-        let classes = ["user-normal"];
-        let staffMembers = require(`../data/lists/${data.u_sourcewiki}-staff.json`);
-
-        if (staffMembers["users"].some(u => u.name === data.u_name && u.note === "current")) {
-            classes.push("user-staff");
-        }
-
-        if (staffMembers["users"].some(u => u.name === data.u_name && u.note === "curse")) {
-            classes.push("user-curse");
-        }
-
-        let namespaceEdits = {};
-
-        const namespaces = require(`../data/namespaces/${data.u_sourcewiki}.json`)["namespaces"];
+        // Namespace edits
+        const namespaceEdits = {};
+        const namespaces = require(`../data/namespaces/${data.u_sourcewiki}.json`).namespaces;
         const userNamespaceEdits = data.u_namespaceedits[0];
 
-        for (let number in userNamespaceEdits) {
-            let namespaceData = namespaces[number];
+        for (const number in userNamespaceEdits) {
+            const namespaceData = namespaces[number];
 
             if (!userNamespaceEdits[number]) {
                 continue;
             }
 
-            if (namespaceData) {
-                namespaceEdits[namespaceData || "Main"] = userNamespaceEdits[number];
-            }
-            else {
-                namespaceEdits["Other"] = (namespaceEdits["Other"] || 0) + userNamespaceEdits[number];
-            }
-        }
-
-        if (bots["users"].some(u => u.name === data.u_name)) {
-            classes.push("user-bot");
-        }
-
-        if (data.u_sourcewiki === "tf") {
-            const capUsers = require("../data/lists/tf-wikicap.json");
-            const valve = require("../data/lists/tf-valve.json");
-
-            valve["users"].includes(data.u_name) ? classes.push("user-valve") : "";
-
-            if (capUsers["users"].some(u => u.name === data.u_name)) {
-                classes.push("user-wikicap");
-            }
+            namespaceEdits[namespaceData || "Main"] = userNamespaceEdits[number];
         }
 
         const wikiConfig = require(`../configs/wikis/${data.u_sourcewiki}-config.json`);
-        const wikiUrl = `https://${wikiConfig["server"]}`;
-        const wikiPath = `${wikiUrl}${wikiConfig["path"] === "/w" ? "/w/" : wikiConfig["path"]}`;
+        const wikiUrl = `https://${wikiConfig.server}`;
+        const wikiPath = `${wikiUrl}${wikiConfig.path === "/w" ? "/w/" : wikiConfig.path}`;
         const oddPath = data.u_sourcewiki === "tf" || data.u_sourcewiki === "portal" ? "wiki/" : "";
         const encodedUsername = encodeURIComponent(data.u_name);
-        const isExpensive = userEdits > 10000;
+        const isExpensive = require(`../data/lists/${data.u_sourcewiki}-bots.json`).users.some(u => u.name === data.u_name) || userEdits > 10000;
 
         const wikiExtensions = require(`../data/extensions/${data.u_sourcewiki}.json`);
-        const wikiHasThanks = Object.keys(wikiExtensions["extensions"]).some((x) => x === "Thanks");
+        const wikiHasThanks = Object.values(wikiExtensions.extensions).some((x) => x === "https://www.mediawiki.org/wiki/Extension:Thanks");
 
-        let out = {
+        const topPages = data.u_topeditedpages;
+
+        const achievements = require("../data/achievements.json").achievements;
+
+        const userAchievements = [];
+
+        const lvls = ["platinum", "gold", "silver", "bronze", "tin"];
+
+        for (const achievement of achievements) {
+            let src = data[achievement.source];
+
+            if (Array.isArray(src)) {
+                src = src.length;
+            }
+
+            for (const lvl of lvls) {
+                const count = achievement[lvl];
+                if (count) {
+                    if (src >= count) {
+                        userAchievements.push(`${achievement.id}-${lvl}`);
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+            }
+        }
+
+        const out = {
             uWiki: data.u_sourcewiki,
             uName: data.u_name,
             uHasRights: (data.u_deletecount !== 0),
+            uTotalEditsMediaWiki: utils.formatNumber(data.u_edits),
             uTotalEdits: utils.formatNumber(userEdits),
-            uTotalEditsMinusCreations: utils.formatNumber(userEdits - (data.u_pagecreations + data.u_uploads)),
+            uTotalEditsMinusCreations: utils.formatNumber(data.u_editsws),
             uPagesCreated: utils.formatNumber(data.u_pagecreations),
             uUploads: utils.formatNumber(data.u_uploads),
             uUploadsPlusNewVersions: utils.formatNumber(data.u_alluploads),
             uMinorEdits: utils.formatNumber(data.u_minoredits),
             uSingleDayOverall: utils.formatNumber(contributionsDictionary[mostEditsOnASingleDay]),
             uSingleDayOverallDate: moment(mostEditsOnASingleDay, "DD-MM-YYYY").fromNow(),
-            uSingleDayOverallDateTip: moment(mostEditsOnASingleDay, "DD-MM-YYYY").format("D MMMM YYYY"),
+            uSingleDayOverallDateTip: moment(mostEditsOnASingleDay, "DD-MM-YYYY").format("MMMM D, YYYY"),
             uBlockCount: utils.formatNumber(data.u_blockcount),
             uDeleteCount: utils.formatNumber(data.u_deletecount),
             uNSEdits: namespaceEdits,
@@ -290,8 +303,8 @@ module.exports.processUser = (data) => {
             uEditsLast7: utils.formatNumber(last7DaysEdits),
             uEditsLast6Months: utils.formatNumber(last6MonthsEdits),
             uEditsLastYear: utils.formatNumber(lastYearEdits),
-            uEditsAllTime: registrationInDays <= 0 ? utils.formatNumber(userEdits) : (userEdits / registrationInDays).toFixed(2),
-            uRegistration: moment(data.u_registration).format("D MMMM YYYY"),
+            uEditsAllTime: registrationInDays <= 0 ? utils.formatNumber(data.u_editsws) : (data.u_editsws / registrationInDays).toFixed(2),
+            uRegistration: moment(data.u_registration).format("MMMM D, YYYY"),
             uRegistrationFromNow: moment(data.u_registration, "YYYYMMDD").fromNow(),
             uRegistrationFromNowDays: registrationInDays,
             uStreak: longestStreak,
@@ -299,53 +312,69 @@ module.exports.processUser = (data) => {
             uStreakCurrent: currentStreak,
             uStreakCountCurrent: currentStreakCount,
             uPagesEdited: utils.formatNumber(data.u_uniquepages),
-            uTopPages: data.u_topeditedpages.slice(1),
-            uTopPageCount: utils.formatNumber(data.u_topeditedpages[0]),
-            uClass: classes[1] ? classes[1] : classes[0],
+            uTopPages: topPages.pages || [],
+            uTopPagesRemainder: topPages.remainder,
+            uTopPageCount: topPages.count ? utils.formatNumber(topPages.count) : 0,
+            uClass: utils.getUserClasses(data.u_sourcewiki, user, true),
             uIsExpensive: isExpensive,
             uThanksGiven: data.u_thanked ? utils.formatNumber(data.u_thanked) : 0,
             uThanksReceived: data.u_thanks ? utils.formatNumber(data.u_thanks) : 0,
+            uBytes: data.u_bytes ? utils.formatNumber(data.u_bytes) : 0,
+            uBytesBalance: data.u_bytesbalance ? utils.formatNumber(data.u_bytesbalance) : 0,
+            uBiggestEdit: data.u_biggestedit,
+            uBiggestEditNs0: data.u_biggesteditns0,
+            uAchievements: userAchievements,
+            uLanguages: data.u_languagedits[0],
             cContribsByDate: contributionsByDay,
             cContribsWeekAndHour: contributionsWeekAndHour,
             cContribsByYM: contributionsByYearAndMonth,
             wSpecialContributions: `${wikiPath}index.php?title=Special%3AContributions&contribs=user&target=${encodedUsername}`,
             wFiles: `${wikiUrl}/${oddPath}Special:ListFiles?limit=50&ilsearch=&user=${encodedUsername}&ilshowall=1`,
             wLinks: `${wikiPath}index.php?title=`,
-            wThanks: wikiHasThanks,
+            wThanks: wikiHasThanks
         };
 
         logger.debug(`${data.u_sourcewiki}: User data for "${data.u_name}" successfully processed!`);
-        logger.verbose(require("util").inspect(out));
+        // logger.verbose(require("util").inspect(out));
 
         if (isExpensive) {
-            out.processDate = new Date().getTime();
-            let directory = `./data/expensiveusers/${data.u_sourcewiki}`;
+            out.processDate = utils.formatDateTimestamp();
+            const directory = `./data/expensiveusers/${data.u_sourcewiki}`;
+
             if (!fs.existsSync(directory)) {
                 fs.mkdirSync(directory);
             }
+
             fs.writeFile(`${directory}/${data.u_name}.json`,
-                JSON.stringify(out, null, 4), (err) => {
+                JSON.stringify(out), (err) => {
                     if (err) {
                         logger.error(`${data.u_sourcewiki}: Error saving ${data.u_name}.json:\n${err}`);
                     }
                 });
         }
+
         return out;
     } finally {
-        let remove = require("../data/processqueue.json").users;
-        let index = remove.indexOf(user);
-
-        if (index !== -1) {
-            logger.verbose(`${data.u_sourcewiki}: Removing "${user}" from the processing queue...`);
-            remove.splice(index, 1);
-
-            try {
-                fs.writeFileSync("./data/processqueue.json", JSON.stringify({ users: remove }, null, 2));
-                logger.verbose(`${data.u_sourcewiki}: User "${user}" was removed from the processing queue!`);
-            } catch (err) {
-                logger.error(`${data.u_sourcewiki}: Failed to remove "${user}" from the processing queue: ${err}`);
-            //return;
+        fs.readFileSync("./data/processqueue.json", (err, data) => {
+            if (err) {
+                logger.error(`${data.u_sourcewiki}: Failed to read process queue: ${err}`);
             }
-        }
+            const remove = JSON.parse(data).users;
+            const index = remove.indexOf(user);
+
+            if (index !== -1) {
+                logger.verbose(`${data.u_sourcewiki}: Removing "${user}" from the processing queue...`);
+                remove.splice(index, 1);
+
+                try {
+                    fs.writeFileSync("./data/processqueue.json", JSON.stringify({
+                        users: remove
+                    }));
+                    logger.verbose(`${data.u_sourcewiki}: User "${user}" was removed from the processing queue!`);
+                } catch (err) {
+                    logger.error(`${data.u_sourcewiki}: Failed to remove "${user}" from the processing queue: ${err}`);
+                }
+            }
+        });
     }
 };

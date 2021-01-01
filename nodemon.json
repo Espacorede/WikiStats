@@ -1,6 +1,6 @@
 {
     "verbose": false,
-    "delay": "300000",
+    "delay": "30000",
     "ignore": [
         "logs/*",
         "public/*",

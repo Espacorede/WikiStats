@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{#unless wTheme}}
+    <meta name="theme-color" content="{{ wTheme }}">
+    {{/unless}}
+    <link href="{{ webHost }}/images/wikis/favicon-{{ wAlias }}.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/preprocessed/tops.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/wikis/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/third_party/fa_wikistats.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <script src="{{ webHost }}/javascript/toppage.js" type="text/javascript"></script>
+    <title>Top Monthly Contributors - {{ wName }} | Wiki Stats</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="container text-center">
+        <div class="spacer-small"></div>
+
+        <h1 class="text-display1">
+            Top contributors
+            <select class="tops-selectyear" id="avail-years"></select>
+        </h1>
+
+        <p class="text-subhead">
+            Top monthly contributors for <span class="top-year">{{ lYear }}</span>.
+            Data for the previous month is generated <i>at the start</i> of the current month.
+            <br>
+            <span class="top-alert" id="alert"></span>
+        </p>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p class="text-headline" id="month-0">January</p>
+
+                <div class="top-list-status nodata" id="link-top-01">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-1">February</p>
+
+                <div class="top-list-status nodata" id="link-top-02">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-2">March</p>
+
+                <div class="top-list-status nodata" id="link-top-03">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-3">April</p>
+
+                <div class="top-list-status nodata" id="link-top-04">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-4">May</p>
+
+                <div class="top-list-status nodata" id="link-top-05">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-5">June</p>
+
+                <div class="top-list-status nodata" id="link-top-06">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-6">July</p>
+
+                <div class="top-list-status nodata" id="link-top-07">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-7">August</p>
+
+                <div class="top-list-status nodata" id="link-top-08">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-8">September</p>
+
+                <div class="top-list-status nodata" id="link-top-09">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-9">October</p>
+
+                <div class="top-list-status nodata" id="link-top-10">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-10">November</p>
+
+                <div class="top-list-status nodata" id="link-top-11">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p class="text-headline" id="month-11">December</p>
+
+                <div class="top-list-status nodata" id="link-top-12">
+                    <button class="btn btn--small" disabled>
+                        No data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

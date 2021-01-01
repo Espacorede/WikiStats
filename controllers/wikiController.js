@@ -1,36 +1,31 @@
+/** ** (c) Espacorede Project ** **/
+
 const fs = require("fs");
 const logger = require("../scripts/logger");
 const moment = require("moment");
 const userModel = require("../models/userModel");
 const wikiModel = require("../models/wikiModel");
+const topModel = require("../models/topModel");
 const wikis = require("../configs/wikis/wikis.json");
 const utils = require("../scripts/utils");
 
-const userController = require("./userController");
+const updateWiki = require("../scripts/updateWiki");
 
 // "Custom" wiki homepage
 exports.homepage = async function (req, res) {
-    let currentWiki = req.params.wiki;
+    const currentWiki = req.params.wiki;
 
-    if (wikis["enabled"].includes(currentWiki)) {
-        try {
-            let wikiData;
-            let wikiTop10;
-            let wikiTop10Uploaders;
+    try {
+        const wikiData = await wikiModel.find({
+            alias: currentWiki
+        }).cache(0, `${currentWiki}-wikidata`);
 
-            wikiData = await wikiModel.find({
-                alias: currentWiki
-            }).cache(0, `${currentWiki}-wikidata`);
-
-            wikiTop10 = await userController.top10(currentWiki);
-            wikiTop10Uploaders = await userController.top10uploaders(currentWiki);
-
-            res.render("wiki.html", {
-                wName: wikis["name"][currentWiki],
+        res.render("pages/wiki.html", {
+            wiki: {
                 wPages: utils.formatNumber(wikiData[0].w_pages),
                 wArticles: utils.formatNumber(wikiData[0].w_articles),
                 wEdits: utils.formatNumber(wikiData[0].w_edits),
-                wEditsAvg: utils.formatNumber(wikiData[0].w_edits / moment().diff(moment(wikis["creation"][currentWiki], "YYYY-MM-DD"), "days")),
+                wEditsAvg: utils.formatNumber(wikiData[0].w_edits / moment().diff(moment(wikis.creation[currentWiki], "YYYY-MM-DD"), "days")),
                 wImages: utils.formatNumber(wikiData[0].w_images),
                 wUsers: utils.formatNumber(wikiData[0].w_users),
                 wActiveUsers: utils.formatNumber(wikiData[0].w_activeusers),
@@ -38,60 +33,64 @@ exports.homepage = async function (req, res) {
                 wEdits7Avg: utils.roundAndFormatNumber(wikiData[0].w_last7 / 7),
                 wEditsLast30: utils.formatNumber(wikiData[0].w_last30),
                 wEdits30Avg: utils.roundAndFormatNumber(wikiData[0].w_last30 / 30),
-                wCreated: moment(wikis["creation"][currentWiki], "YYYY-MM-DD").format("MMMM Do, YYYY"),
-                wCreatedAgo: wikiData[0].w_age,
-                wIsDefault: currentWiki === "tf" ? true : false,
+                wCreated: utils.formatDate(wikis.creation[currentWiki], "MMMM YYYY"),
+                wCreatedAgo: wikiData[0].w_age
+            },
+            helpers: {
+                webHost: `${req.protocol}://${req.get("Host")}`,
+                webHostCanonical: "http://wikistats.localhost",
+                wName: wikis.name[currentWiki],
+                wIsDefault: currentWiki === "tf",
                 wAlias: currentWiki,
-                wCSS: wikis["files"]["css"][currentWiki],
-                wLogo: wikis["files"]["logo"][currentWiki],
-                wFavicon: wikis["files"]["favicon"][currentWiki],
-                wTop10: wikiTop10,
-                wTop10Uploaders: wikiTop10Uploaders,
-                partials: {
-                    header: "common/header"
-                }
-            });
+                wTheme: wikis.files.theme[currentWiki]
+            },
+            partials: {
+                header: "../common/header",
+                footer: "../common/footer"
+            }
+        });
+    } catch (err) {
+        updateWiki.updateWiki(currentWiki);
 
-        } catch (err) {
-            return utils.renderInternalErrorPage(res);
-        }
-    } else {
-        return utils.renderNotFoundPage(res);
+        utils.renderInternalErrorPage(res);
     }
 };
 
 // Lists directory
 exports.lists = function (req, res) {
-    let currentWiki = req.params.wiki;
-    let dataFiles = fs.readdirSync("./data/lists");
-
-    if (!wikis["enabled"].includes(currentWiki)) {
-        utils.renderNotFoundPage(res);
-        return;
-    }
-
-    let lists = [];
+    const currentWiki = req.params.wiki;
+    const dataFiles = fs.readdirSync("./data/lists");
+    const lists = [];
 
     dataFiles.forEach((file) => {
         if (file.includes(`${currentWiki}-`)) {
-            if (require(`../data/lists/${file}`)["users"][0]) {
+            // FIXME: Quando isso falha a página fica com mensagem de Server Error padrão
+            // Favor reescrever isso e usar utils.renderInternalErrorPage
+            const list = require(`../data/lists/${file}`);
+
+            if (list.users[0]) {
                 lists.push({
-                    name: require(`../data/lists/${file}`)["name"],
-                    url: file.split("-")[1].split(".json")[0]
+                    name: list.name,
+                    url: file.split("-")[1].split(".json")[0],
+                    generated: list.auto === false
                 });
             }
         }
     });
 
-    res.render("lists.html", {
-        wAlias: currentWiki,
-        wName: wikis["name"][currentWiki],
+    res.render("lists/lists-homepage.html", {
         wLists: lists,
-        wCSS: wikis["files"]["css"][currentWiki],
-        wLogo: wikis["files"]["logo"][currentWiki],
-        wFavicon: wikis["files"]["favicon"][currentWiki],
+        helpers: {
+            webHost: `${req.protocol}://${req.get("Host")}`,
+            webHostCanonical: "http://wikistats.localhost",
+            wName: wikis.name[currentWiki],
+            wIsDefault: currentWiki === "tf",
+            wAlias: currentWiki,
+            wTheme: wikis.files.theme[currentWiki]
+        },
         partials: {
-            header: "common/header"
+            header: "../common/header",
+            footer: "../common/footer"
         }
     });
 };
@@ -99,124 +98,302 @@ exports.lists = function (req, res) {
 // Get detailed list
 // Brace yourselves, we need to rewrite this mess
 exports.list = function (req, res) {
-    let currentWiki = req.params.wiki;
-    let selectedList = req.params.list;
-    let wikiCap = currentWiki === "tf";
+    const currentWiki = req.params.wiki;
+    const selectedList = req.params.list;
+    const wikiCap = currentWiki === "tf";
+    let listFileSelected = {};
 
-    if (!wikis["enabled"].includes(currentWiki)) {
-        utils.renderNotFoundPage(res);
-        return;
-    }
-
-    if (!fs.existsSync(`./data/lists/${currentWiki}-${selectedList}.json`)) {
-        utils.renderNotFoundPage(res);
-        return;
-    }
-
-    function isUserActive(wiki, user) {
-        let active = require(`../data/lists/${wiki}-active.json`);
-        return active["users"].some(u => u.name === user) ? true : false;
-    }
-
-    function isUserStaff(wiki, user) {
-        let active = require(`../data/lists/${wiki}-staff.json`);
-        return active["users"].some(u => u.name === user) ? true : false;
-    }
-
-    function isUserWikiCapOwner(user) {
-        let active = require("../data/lists/tf-wikicap.json");
-        return active["users"].some(u => u.name === user) ? true : false;
-    }
-
-    function isUserValveE(user) {
-        let active = require("../data/lists/tf-valve.json");
-        return active["users"].some(u => u.name === user) ? true : false;
-    }
-
-    function isUserABot(wiki, user) {
-        let active = require(`../data/lists/${wiki}-bots.json`);
-        return active["users"].some(u => u.name === user) ? true : false;
-    }
-
-    let listFileSelected = require(`../data/lists/${currentWiki}-${selectedList}.json`);
-    let listFileStaff = require(`../data/lists/${currentWiki}-staff.json`);
-
-    userModel.find({
-        "u_sourcewiki": currentWiki
-    }, "u_name u_edits u_registration", (err, data) => {
+    fs.readFile(`./data/lists/${currentWiki}-${selectedList}.json`, function (err, data) {
         if (err) {
-            logger.mongooseerror(`${currentWiki} Failed to retrieve users from database (list/${selectedList}): ${err}`);
-            utils.renderInternalErrorPage(res);
-            return;
-        }
+            logger.error(`${currentWiki}: Failed to read ${currentWiki}-${selectedList}.json: ${err}`);
 
-        let users = [];
+            if (err.code === "ENOENT") {
+                return utils.renderNotFoundPageWiki(res, currentWiki);
+            } else {
+                return utils.renderInternalErrorPage(res);
+            }
+        } else {
+            listFileSelected = JSON.parse(data);
 
-        data.forEach((entry) => {
-            listFileSelected["users"].forEach(user => {
-                if (user["name"] === entry["u_name"]) {
-                    let userClass;
-
-                    if (isUserStaff(currentWiki, entry["u_name"])) {
-                        listFileStaff["users"].filter(function (u) {
-                            if (u.name === entry["u_name"]) {
-                                userClass = `user-${u.note === "current" ? "staff" : u.note}`;
-                            }
-                        });
-                    }
-
-                    if (isUserValveE(entry["u_name"])) {
-                        userClass = "user-valve";
-                    }
-
-                    if (wikiCap && !userClass) {
-                        if (isUserWikiCapOwner(entry["u_name"])) {
-                            userClass = "user-wikicap";
-                        }
-                    }
-
-                    let userActive = isUserActive(currentWiki, entry["u_name"]);
-
-                    users.push({
-                        name: entry["u_name"],
-                        class: isUserABot(currentWiki, entry["u_name"]) ? "user-bot" : (userClass ? userClass : "user-normal"),
-                        editsperday: (entry["u_edits"] / moment().diff(moment(entry["u_registration"], "YYYYMMDD"), "days")).toFixed(2),
-                        registration: moment(entry["u_registration"]).format("MMM Do YYYY HH:mm"),
-                        registrationUnix: moment(entry["u_registration"]).format("x"),
-                        active: userActive ? "Yes" : "No",
-                        activeClass: userActive ? "active" : "inactive",
-                        edits: new Intl.NumberFormat().format(entry["u_edits"]),
-                        wikicap_number: user["number"] ? user["number"] : null,
-                        wikicap_received: user["date"] ? moment(user["date"], "MMM Do YYYY").format("MMM Do YYYY") : null,
-                        wikicap_receivedUnix: user["timestamp"] ? user["timestamp"] : null,
-                        staff_note: user["note"] ? user["note"].charAt(0).toUpperCase() + user["note"].slice(1) : null,
-                        top100_position: user["position"] ? user["position"] : null
-                    });
+            userModel.find({
+                u_sourcewiki: currentWiki,
+                u_edits: {$exists: true}
+            }, "u_name u_edits u_registration u_groups", (err, data) => {
+                if (err) {
+                    logger.mongooseerror(`${currentWiki}: Failed to retrieve users from database (list/${selectedList}): ${err}`);
+                    utils.renderInternalErrorPage(res);
+                    return;
                 }
-            });
-        });
 
-        createPage(users);
+                const users = [];
+
+                data.forEach((entry) => {
+                    listFileSelected.users.forEach(user => {
+                        if (user.name === entry.u_name &&
+                            !utils.isUserBlacklisted(entry.u_name) &&
+                            !utils.isUserRightBlacklisted(entry.u_groups)
+                        ) {
+                            const userActive = utils.isUserActive(currentWiki, entry.u_name);
+
+                            users.push({
+                                name: entry.u_name,
+                                class: utils.getUserClasses(currentWiki, entry.u_name),
+                                editsperday: (entry.u_edits / moment().diff(moment(entry.u_registration, "YYYYMMDD"), "days")).toFixed(2),
+                                registration: utils.formatDate(entry.u_registration, "LL"),
+                                registrationUnix: utils.formatDateTimestamp(entry.u_registration),
+                                active: userActive ? "Yes" : "No",
+                                activeClass: userActive ? "active" : "inactive",
+                                edits: utils.formatNumber(entry.u_edits),
+                                wikicap_number: user.number ? user.number : null,
+                                wikicap_received: user.date ? utils.formatDate(user.date, "LL") : null,
+                                wikicap_receivedUnix: user.timestamp ? user.timestamp : null,
+                                top100_position: user.position ? user.position : null
+                            });
+                        }
+                    });
+                });
+
+                createPage(users);
+            });
+        }
     });
 
     function createPage(users) {
-        res.render("listpage.html", {
+        const list = require(`../data/lists/${currentWiki}-${selectedList}.json`);
+
+        res.render("lists/lists-generic.html", {
             rUsers: users,
-            wAlias: currentWiki,
-            wName: wikis["name"][currentWiki],
-            wCSS: wikis["files"]["css"][currentWiki],
-            wLogo: wikis["files"]["logo"][currentWiki],
-            wFavicon: wikis["files"]["favicon"][currentWiki],
+            lName: list.name,
+            lDescription: list.description,
+            lActive: selectedList !== "active",
             wWikiCap: wikiCap,
             wWikiCapList: selectedList === "wikicap",
             wTop100List: selectedList === "top100",
             wStaffList: selectedList === "staff",
-            wGamepedia: require(`../configs/wikis/${currentWiki}-config.json`)["server"].includes("gamepedia"),
-            lName: require(`../data/lists/${currentWiki}-${selectedList}.json`)["name"],
-            lDescription: require(`../data/lists/${currentWiki}-${selectedList}.json`)["description"],
+            lGenerated: list.auto === false,
+            lUpdatedAt: list.updatedat || "",
+            helpers: {
+                webHost: `${req.protocol}://${req.get("Host")}`,
+                webHostCanonical: "http://wikistats.localhost",
+                wAlias: currentWiki,
+                wName: wikis.name[currentWiki],
+                wTheme: wikis.files.theme[currentWiki]
+            },
             partials: {
-                header: "common/header"
+                header: "../common/header",
+                footer: "../common/footer"
             }
         });
+    }
+};
+
+// Get monthly top contributors
+exports.monthlytop = async function (req, res) {
+    const currentWiki = req.params.wiki;
+    const topData = await topModel.find({
+        wiki: currentWiki,
+        year: req.params.year,
+        month: req.params.month,
+        data: {$exists: true, $ne: []}
+    }, "data start end").cache(0, `${currentWiki}-top-${req.params.year}-${req.params.month}`);
+
+    if (topData[0]) {
+        const users = [];
+        let index = 1;
+
+        topData[0].data.forEach((entry) => {
+            users.push({
+                index: index,
+                name: entry.name,
+                class: utils.getUserClasses(currentWiki, entry.name),
+                contribsperday: (entry.edits / moment(topData[0].end, "YYYY-MM-DD").diff(moment(topData[0].start, "YYYY-MM-DD"), "days")).toFixed(2),
+                contribs: utils.formatNumber(entry.contribs),
+                edits: utils.formatNumber(entry.edits),
+                uploads: utils.formatNumber(entry.uploads)
+            });
+
+            index++;
+        });
+
+        res.render("lists/tops-page.html", {
+            wGamepedia: require(`../configs/wikis/${currentWiki}-config.json`).server.includes("gamepedia"),
+            wWikiCap: currentWiki === "tf",
+            data: {
+                tMonth: utils.formatDate(req.params.month, "MMMM"),
+                tYear: req.params.year,
+                tStart: utils.formatDateLocaleString(topData[0].start),
+                tEnd: utils.formatDateLocaleString(topData[0].end),
+                tData: users
+            },
+            helpers: {
+                webHost: `${req.protocol}://${req.get("Host")}`,
+                webHostCanonical: "http://wikistats.localhost",
+                wAlias: currentWiki,
+                wName: wikis.name[currentWiki],
+                wTheme: wikis.files.theme[currentWiki]
+            },
+            partials: {
+                header: "../common/header",
+                footer: "../common/footer"
+            }
+        });
+    } else {
+        utils.renderNotFoundPage(res, req);
+    }
+};
+
+// Monthly top directory
+exports.monthly = function (req, res) {
+    const currentWiki = req.params.wiki;
+
+    res.render("lists/tops-homepage.html", {
+        helpers: {
+            webHost: `${req.protocol}://${req.get("Host")}`,
+            webHostCanonical: "http://wikistats.localhost",
+            wName: wikis.name[currentWiki],
+            wIsDefault: currentWiki === "tf",
+            wAlias: currentWiki,
+            wTheme: wikis.files.theme[currentWiki],
+            lYear: new Date().getUTCFullYear()
+        },
+        partials: {
+            header: "../common/header",
+            footer: "../common/footer"
+        }
+    });
+};
+
+exports.monthlytopavailable = async function (req, res) {
+    try {
+        const available = await topModel.find({
+            wiki: req.params.wiki,
+            year: req.query.year,
+            data: {$exists: true, $ne: []}
+        }, "month");
+        const lists = [];
+
+        available.forEach((list) => {
+            lists.push({
+                list: utils.formatDate(list.month, "MMMM"),
+                year: req.query.year,
+                month: list.month
+            });
+        });
+
+        res.send(JSON.stringify({
+            lists: lists
+        }));
+    } catch (err) {
+        utils.renderJsonResponse(res, "Failed.", "There are no tops.");
+    }
+};
+
+// Get top 10 editors
+exports.top10editors = async function (req, res) {
+    const currentWiki = req.params.wiki;
+
+    try {
+        const users = [];
+        const bots = [];
+        const userData = await userModel.find({
+            u_sourcewiki: currentWiki,
+            u_editsws: {$exists: true}
+        }, "u_name u_editsws u_registration u_groups", {
+            skip: 0,
+            limit: 15,
+            sort: {
+                u_editsws: -1
+            }
+        });
+
+        userData.forEach((entry) => {
+            if (!utils.isUserABot(currentWiki, entry.u_name) &&
+                users.length < 10 &&
+                entry.u_editsws !== 0 &&
+                !utils.isUserRightBlacklisted(entry.u_groups) &&
+                !utils.isUserBlacklisted(entry.u_name)
+            ) {
+                users.push({
+                    name: entry.u_name,
+                    editsPerDay: (entry.u_editsws / moment().diff(moment(entry.u_registration, "YYYYMMDD"), "days")).toFixed(2),
+                    edits: utils.formatNumber(entry.u_editsws),
+                    class: utils.getUserClasses(currentWiki, entry.u_name)
+                });
+            } else if (utils.isUserABot(currentWiki, entry.u_name)) {
+                bots.push({
+                    name: entry.u_name,
+                    editsPerDay: (entry.u_editsws / moment().diff(moment(entry.u_registration, "YYYYMMDD"), "days")).toFixed(2),
+                    edits: utils.formatNumber(entry.u_editsws),
+                    class: utils.getUserClasses(currentWiki, entry.u_name)
+                });
+            }
+        });
+
+        res.send(JSON.stringify({
+            success: true,
+            total: {
+                users: users.length,
+                bots: bots.length
+            },
+            users: users,
+            bots: bots
+        }));
+    } catch (err) {
+        utils.renderJsonResponse(res, "Failed.", err);
+    }
+};
+
+// Get top 10 uploaders
+exports.top10uploaders = async function (req, res) {
+    const currentWiki = req.params.wiki;
+
+    try {
+        const users = [];
+        const bots = [];
+        const userData = await userModel.find({
+            u_sourcewiki: currentWiki,
+            u_edits: {$exists: true}
+        }, "u_name u_alluploads u_registration u_groups", {
+            skip: 0,
+            limit: 20,
+            sort: {
+                u_alluploads: -1
+            }
+        });
+
+        userData.forEach((entry) => {
+            if (!utils.isUserABot(currentWiki, entry.u_name) &&
+                users.length < 10 &&
+                entry.u_alluploads !== 0 &&
+                !utils.isUserRightBlacklisted(entry.u_groups) &&
+                !utils.isUserBlacklisted(entry.u_name)
+            ) {
+                users.push({
+                    name: entry.u_name,
+                    uploads: utils.formatNumber(entry.u_alluploads),
+                    uploadsPerDay: (entry.u_alluploads / moment().diff(moment(entry.u_registration, "YYYYMMDD"), "days")).toFixed(2),
+                    class: utils.getUserClasses(currentWiki, entry.u_name)
+                });
+            } else if (utils.isUserABot(currentWiki, entry.u_name)) {
+                bots.push({
+                    name: entry.u_name,
+                    uploads: utils.formatNumber(entry.u_alluploads),
+                    uploadsPerDay: (entry.u_alluploads / moment().diff(moment(entry.u_registration, "YYYYMMDD"), "days")).toFixed(2),
+                    class: utils.getUserClasses(currentWiki, entry.u_name)
+                });
+            }
+        });
+
+        res.send(JSON.stringify({
+            success: true,
+            total: {
+                users: users.length,
+                bots: bots.length
+            },
+            users: users,
+            bots: bots
+        }));
+    } catch (err) {
+        utils.renderJsonResponse(res, "Failed.", err);
     }
 };

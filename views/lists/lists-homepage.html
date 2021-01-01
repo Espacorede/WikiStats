@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    {{#unless wTheme}}
+    <meta name="theme-color" content="{{ wTheme }}">
+    {{/unless}}
+    <link href="{{ webHost }}/images/wikis/favicon-{{ wAlias }}.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/preprocessed/tops.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/wikis/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/third_party/fa_wikistats.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <title>Lists - {{ wName }} | Wiki Stats</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="container text-center">
+        <div class="spacer-small"></div>
+
+        <h1 class="text-display1">
+            Lists <i class="icon-th-list"></i>
+        </h1>
+
+        <p class="text-subhead">
+            Lists marked with a heart (<i class="icon-heart-empty"></i>) are curated.
+            <br><br>
+        </p>
+
+        <div class="row">
+            {{#each wLists}}
+            <div class="col-md-4">
+                <p class="text-subhead">
+                    <a href="{{ webHost }}/wiki/{{ wAlias }}/list/{{ url }}">{{ name }}</a>
+                    {{#if generated}}
+                    <i class="icon-heart-empty"></i>
+                    {{/if}}
+                </p>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+</body>
+
+</html>

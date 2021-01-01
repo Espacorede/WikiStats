@@ -1,40 +1,66 @@
 {
-  "name": "wikistats",
-  "version": "1.2.0",
-  "description": "OTFWiki Stats",
-  "main": "app.js",
-  "scripts": {
-    "start": "nodemon ./bin/www"
-  },
-  "contributors": [
-    {
-      "name": "Luís",
-      "email": "luis@espacore.de",
-      "url": "https://tarkoviski.me"
+    "private": true,
+    "name": "wikistats",
+    "version": "1.3.0",
+    "description": "OTFWiki Stats",
+    "main": "app.js",
+    "scripts": {
+        "start": "node ./bin/www",
+        "start-nodemon": "nodemon ./bin/www",
+        "start-prod": "NODE_ENV=production node ./bin/www",
+        "start-no-workers": "nodemon ./bin/www --no-workers",
+        "eslint": "eslint -c .eslintrc-node.json app.js scripts/maintenance/*.js scripts/*.js routes/*.js models/*.js controllers/*.js",
+        "eslint-fix": "eslint -c .eslintrc-node.json app.js scripts/maintenance/*.js scripts/*.js routes/*.js models/*.js controllers/*.js --fix",
+        "eslint-web": "eslint -c .eslintrc-web.json public/javascript/*.js",
+        "eslint-web-fix": "eslint -c .eslintrc-web.json public/javascript/*.js --fix",
+        "stylelint-legacy": "stylelint public/css/wikis/*.css public/css/*.css",
+        "stylelint-legacy-fix": "stylelint public/css/wikis/*.css public/css/*.css --fix",
+        "sass-generate": "sass --style=expanded sass:public/css/preprocessed",
+        "sass-watch": "sass --watch --style=expanded sass:public/css/preprocessed",
+        "maintenance-genhistory": "node scripts/maintenance/history.js",
+        "maintenance-addwiki": "node scripts/maintenance/addWiki.js",
+        "heroku-postbuild": "sass --update --style=compressed --no-source-map sass:public/css/preprocessed"
     },
-    {
-      "name": "Gabriel",
-      "email": "gabriel@espacore.de"
+    "contributors": [
+        {
+            "name": "Luís",
+            "email": "luis@espacore.de"
+        },
+        {
+            "name": "Gabriel",
+            "email": "gabriel@espacore.de"
+        }
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "body-parser": "^1.19.0",
+        "cachegoose": "^8.0.0",
+        "compression": "^1.7.4",
+        "consolidate": "^0.15.1",
+        "express": "^4.17.1",
+        "express-rate-limit": "^5.1.3",
+        "handlebars": "^4.7.6",
+        "moment": "^2.27.0",
+        "mongoose": "^5.9.22",
+        "nodemw": "^0.13.0",
+        "prompt": "^1.0.0",
+        "rate-limit-mongo": "^2.2.0",
+        "socket.io": "^2.3.0",
+        "socket.io-client": "^2.3.0",
+        "tabletojson": "^2.0.4",
+        "winston": "^3.3.3",
+        "worker-nodes": "^2.1.0"
+    },
+    "devDependencies": {
+        "eslint": "^7.4.0",
+        "eslint-config-standard": "^14.1.1",
+        "eslint-plugin-import": "^2.22.0",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-promise": "^4.2.1",
+        "eslint-plugin-standard": "^4.0.1",
+        "nodemon": "^2.0.4",
+        "sass": "^1.26.10",
+        "stylelint": "^13.6.1",
+        "stylelint-config-standard": "^20.0.0"
     }
-  ],
-  "license": "MIT",
-  "dependencies": {
-    "body-parser": "^1.18.3",
-    "cachegoose": "^7.1.0",
-    "consolidate": "^0.15.1",
-    "express": "^4.16.4",
-    "moment": "^2.22.2",
-    "mongoose": "^5.3.10",
-    "mustache": "^2.3.1",
-    "nodemon": "^1.18.7",
-    "nodemw": "^0.12.2",
-    "socket.io": "^2.1.1",
-    "socket.io-client": "^2.1.1",
-    "tabletojson": "^0.9.8",
-    "winston": "^3.1.0",
-    "worker-nodes": "^1.6.1"
-  },
-  "devDependencies": {
-    "eslint": "^5.15.1"
-  }
 }

@@ -1,4 +1,4 @@
-/** * (c) Espacorede Project * **/
+/** ** (c) Espacorede Project ** **/
 
 const db = require("./mongooseConnect");
 const fs = require("fs");
@@ -13,16 +13,26 @@ db.on("error", (err) => {
     }
 });
 
-module.exports.updateUsers = () => {
+module.exports.updateListUsers = () => {
     dataFiles.forEach(function (file) {
-        wikis["enabled"].forEach(function (wiki) {
+        wikis.enabled.forEach(function (wiki) {
             if (file.includes(wiki)) {
                 logger.verbose(`${wiki}: Updating users listed on ${file}`);
 
-                require(`../data/lists/${file}`)["users"].forEach(user => {
-                    updateUser.getUserInfo(user["name"], false, wiki);
-                });
+                try {
+                    const list = require(`../data/lists/${file}`);
+
+                    list.users.forEach(user => {
+                        updateUser.getUserInfo(user.name, 0, wiki);
+                    });
+                } catch (ex) {
+                    logger.error(`${wiki}: Failed to read ${file}: ${ex}`);
+                }
             }
         });
     });
 };
+
+// module.exports.updateDbUsers = () => {
+//
+// };

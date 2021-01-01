@@ -1,0 +1,30 @@
+@charset "utf-8";
+
+.faq {
+    .question {
+        font-weight: 400;
+        font-size: 1rem;
+
+        &:first-child {
+            margin-top: -10px;
+        }
+
+        &:not(:first-child) {
+            padding-top: 15px;
+        }
+    }
+
+    .answer {
+        padding-top: 10px;
+        padding-left: 20px;
+        color: #2b2b2b;
+
+        p {
+            margin: 0;
+        }
+    }
+}
+
+code {
+    color: darkred;
+}

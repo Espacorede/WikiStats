@@ -1,12 +1,15 @@
-/** * (c) Espacorede Project * **/
+/** ** (c) Espacorede Project ** **/
 
 const express = require("express");
 const router = express.Router();
 
 const userController = require("../controllers/userController");
+const utils = require("../scripts/utils");
 
-router.get("/:wiki/:user", userController.user);
+// Base
+router.get("/:wiki/:user", utils.middlewareWikiIsEnabled, userController.user);
 
-router.get("/:wiki/:user/compare", userController.compare);
+// Data dump
+router.get("/:wiki/:user/data", utils.middlewareWikiIsEnabledJson, userController.userRaw);
 
 module.exports = router;

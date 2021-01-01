@@ -1,3 +1,5 @@
+/** ** (c) Espacorede Project ** **/
+
 const logger = require("../scripts/logger");
 const moment = require("moment");
 const updateUser = require("../scripts/updateUser");
@@ -6,39 +8,37 @@ const wikis = require("../configs/wikis/wikis.json");
 const utils = require("../scripts/utils");
 
 // Detailed user page
-exports.user = function (req, res) {
-    let currentWiki = req.params.wiki;
+exports.user = async function (req, res) {
+    const currentWiki = req.params.wiki;
+    const user = utils.returnCleanUsername(req.params.user);
 
-    if (!wikis["enabled"].includes(currentWiki)) {
-        utils.renderNotFoundPage(res);
-        return;
-    }
+    try {
+        const userData = await userModel.find({
+            u_sourcewiki: currentWiki,
+            u_name: user
+        }).cache(0, `${currentWiki}user-${user}`);
 
-    let user = utils.returnCleanUsername(req.params.user);
+        if (!userData || !userData[0] || !userData[0].u_edits) {
+            if (!utils.isUserBlacklisted(user)) {
+                logger.verbose(`No data for "${user}" was found in the database, calling updateUser.`);
+                updateUser.getUserInfo(user, 0, currentWiki);
+            } else {
+                logger.verbose(`No data for "${user}" was found in the database but isUserBlacklisted is true.`);
+            }
 
-    userModel.find({
-        u_sourcewiki: currentWiki,
-        u_name: user
-    }).cache(0, `${currentWiki}user-${user}`).exec((err, data) => {
-        if (err) {
-            logger.mongooseerror(`Failed to search for "${user}" in the database (/user): ${err}`);
-            utils.renderInternalErrorPage(res);
-            return;
-        }
-
-        if (!data || !data[0] || !data[0].u_edits) {
-            logger.verbose(`No data for "${user}" was found in the database, calling updateUser.`);
-            updateUser.getUserInfo(user, 2, currentWiki);
-            res.render("user.html", {
+            res.render("pages/user.html", {
                 user: user,
-                wName: wikis["name"][currentWiki],
-                wAlias: currentWiki,
-                wIsDefault: currentWiki === "tf" ? true : false,
-                wCSS: wikis["files"]["css"][currentWiki],
-                wLogo: wikis["files"]["logo"][currentWiki],
-                wFavicon: wikis["files"]["favicon"][currentWiki],
+                helpers: {
+                    webHost: `${req.protocol}://${req.get("Host")}`,
+                    webHostCanonical: "http://wikistats.localhost",
+                    wAlias: currentWiki,
+                    wName: wikis.name[currentWiki],
+                    wTheme: wikis.files.theme[currentWiki],
+                    wIsDefault: currentWiki === "tf"
+                },
                 partials: {
-                    header: "common/header"
+                    header: "../common/header",
+                    footer: "../common/footer"
                 }
             });
 
@@ -47,208 +47,81 @@ exports.user = function (req, res) {
 
         updateUser.getUserInfo(user, 0, currentWiki);
 
-        let registrationInDays = moment().diff(moment(data[0].u_registration, "YYYYMMDD"), "days");
-        let average = registrationInDays <= 0 ? utils.formatNumber(data[0].u_edits) : (data[0].u_edits / registrationInDays).toFixed(2);
+        const registrationInDays = moment().diff(moment(userData[0].u_registration, "YYYYMMDD"), "days");
+        const average = registrationInDays <= 0 ? utils.formatNumber(userData[0].u_edits) : (userData[0].u_edits / registrationInDays).toFixed(2);
 
-        res.render("user.html", {
+        res.render("pages/user.html", {
             user: user,
-            mEdits: utils.formatNumber(data[0].u_contribs.length),
+            mEdits: utils.formatNumber(userData[0].u_contribs.length),
             mEditsAvg: average,
-            wName: wikis["name"][currentWiki],
-            wAlias: currentWiki,
-            wIsDefault: currentWiki === "tf" ? true : false,
-            wCSS: wikis["files"]["css"][currentWiki],
-            wLogo: wikis["files"]["logo"][currentWiki],
-            wFavicon: wikis["files"]["favicon"][currentWiki],
+            helpers: {
+                webHost: `${req.protocol}://${req.get("Host")}`,
+                webHostCanonical: "http://wikistats.localhost",
+                wAlias: currentWiki,
+                wName: wikis.name[currentWiki],
+                wTheme: wikis.files.theme[currentWiki],
+                wIsDefault: currentWiki === "tf",
+                wIsMultiLanguage: currentWiki === ("tf" || "portal")
+            },
             partials: {
-                header: "common/header"
+                header: "../common/header",
+                footer: "../common/footer"
             }
         });
-    });
+    } catch (err) {
+        logger.error(`Failed to search for "${user}" in the database (/user): ${err}`);
+        utils.renderInternalErrorPage(res);
+    }
 };
 
-// Compare user
-exports.compare = function (req, res) {
-    let currentWiki = req.params.wiki;
+// Raw user data
+exports.userRaw = async function (req, res) {
+    const currentWiki = req.params.wiki;
+    const user = utils.returnCleanUsername(req.params.user);
 
-    if (!wikis["enabled"].includes(currentWiki)) {
-        utils.renderNotFoundPage(res);
-        return;
-    }
+    try {
+        const userData = await userModel.find({
+            u_sourcewiki: currentWiki,
+            u_name: user
+        }).cache(0, `${currentWiki}user-${user}`);
 
-    let mainUser = req.params.user;
-    let comparedUser = req.query.user;
-    let main; // Dados do primeiro usuário
-    let target; // Dados do segundo usuário
-
-    getUser(mainUser);
-
-    function getUser(name, isMain = true) {
-        userModel.find({
-            u_name: name
-        }).exec((err, data) => {
-            if (err) {
-                logger.mongooseerror(`Failed to search for "${name}" in the database (/user/compare): ${err}`);
-                utils.renderInternalErrorPage(res);
-                return;
-            }
-
-            if (!data || !data[0]) {
-                res.status(404).render("error.html", {
-                    errorCode: "404",
-                    errorTitle: `User "${name}" was not found`,
-                    errorReturnToMain: true,
-                    partials: {
-                        header: "common/header"
-                    }
-                });
-                return;
-            }
-
-            if (!data[0].u_contribs[0]) {
-                res.status(404).render("error.html", {
-                    errorCode: "404",
-                    errorTitle: `User "${name}" has no edits`,
-                    errorReturnToMain: true,
-                    partials: {
-                        header: "common/header"
-                    }
-                });
-                return;
-            }
-
-            if (isMain) {
-                processUser(data, true, false);
+        if (!userData || !userData[0] || !userData[0].u_edits) {
+            if (!utils.isUserBlacklisted(user)) {
+                logger.verbose(`No data for "${user}" was found in the database (raw profile).`);
+                utils.renderJsonResponse(res, false, "User not found.");
             } else {
-                processUser(data, false, true);
+                utils.renderJsonResponse(res, false, "User is blacklisted.");
             }
-        });
-    }
 
-    function processUser(data, isMain = true, shouldCreate = false) {
-        if (isMain) {
-            main = data;
-        } else {
-            target = data;
+            return;
         }
 
-        if (shouldCreate) {
-            createPage();
-        } else {
-            getUser(comparedUser, false);
-        }
-    }
-
-    function createPage() {
-        res.render("compare.html", {
-            main: main[0].u_name,
-            target: target[0].u_name,
-            wName: wikis["name"][currentWiki],
-            wAlias: currentWiki,
-            wIsDefault: currentWiki === "tf" ? true : false,
-            wCSS: wikis["files"]["css"][currentWiki],
-            wLogo: wikis["files"]["logo"][currentWiki],
-            wFavicon: wikis["files"]["favicon"][currentWiki],
-            partials: {
-                header: "common/header"
+        res.send(JSON.stringify({
+            success: true,
+            user: userData[0].u_name,
+            wiki: userData[0].u_sourcewiki,
+            lastUpdated: userData[0].dataLastUpdated,
+            updateComplete: userData[0].updateComplete,
+            data: {
+                registration: userData[0].registration,
+                uploads: userData[0].u_alluploads,
+                uploadsNew: userData[0].u_uploads,
+                edits: userData[0].u_editsws,
+                editsMediaWiki: userData[0].u_edits,
+                minors: userData[0].u_minoredits,
+                creations: userData[0].u_pagecreations,
+                uniques: userData[0].u_uniquepages,
+                blocks: userData[0].u_blockcount,
+                deletes: userData[0].u_deletecount,
+                thanked: userData[0].u_thanked,
+                thanks: userData[0].u_thanks,
+                namespaces: userData[0].u_namespaceedits,
+                groups: userData[0].u_groups,
+                languages: userData[0].u_languagedits || null
             }
-        });
-    }
-};
-
-// Get top 10 editors
-exports.top10 = async function (currentWiki) {
-    try {
-        let userData;
-        let users = [];
-
-        userData = await userModel.find({
-            "u_sourcewiki": currentWiki
-        }, "u_name u_edits u_registration", {
-            skip: 0,
-            limit: 20,
-            sort: {
-                u_edits: -1
-            }
-        });
-
-        userData.forEach((entry) => {
-            if (!isUserBot(currentWiki, entry["u_name"]) && users.length < 10 && entry["u_edits"] !== 0) {
-                users.push({
-                    name: entry["u_name"],
-                    editsperday: (entry["u_edits"] / moment().diff(moment(entry["u_registration"], "YYYYMMDD"), "days")).toFixed(2),
-                    edits: new Intl.NumberFormat().format(entry["u_edits"]),
-                    class: getUserClasses(currentWiki, entry["u_name"])
-                });
-            }
-        });
-
-        return users;
+        }));
     } catch (err) {
-        return false;
+        logger.error(`Failed to search for "${user}" in the database (raw profile): ${err}`);
+        utils.renderJsonResponse(res, false, "Query failed.");
     }
 };
-
-// Get top 10 uploaders
-exports.top10uploaders = async function (currentWiki) {
-    try {
-        let userData;
-        let users = [];
-
-        userData = await userModel.find({
-            "u_sourcewiki": currentWiki
-        }, "u_name u_uploads", {
-            skip: 0,
-            limit: 20,
-            sort: {
-                u_uploads: -1
-            }
-        });
-
-
-        userData.forEach((entry) => {
-            if (!isUserBot(currentWiki, entry["u_name"]) && users.length < 10 && entry["u_uploads"] !== 0) {
-                users.push({
-                    name: entry["u_name"],
-                    uploads: new Intl.NumberFormat().format(entry["u_uploads"]),
-                    class: getUserClasses(currentWiki, entry["u_name"])
-                });
-            }
-        });
-
-        return users;
-    } catch (err) {
-        return false;
-    }
-};
-
-function isUserBot(wiki, user) {
-    let active = require(`../data/lists/${wiki}-bots.json`);
-    return active["users"].some(u => u.name === user) ? true : false;
-}
-
-// We should probably move this to utils.js
-function getUserClasses(wiki, user) {
-    let classes = ["user-normal"];
-
-    if (require(`../data/lists/${wiki}-staff.json`)["users"].some(u => u.name === user && u.note === "current")) {
-        classes.push("user-staff");
-    }
-
-    if (require(`../data/lists/${wiki}-staff.json`)["users"].some(u => u.name === user && u.note === "curse")) {
-        classes.push("user-curse");
-    }
-
-    if (wiki === "tf") {
-        if (require("../data/lists/tf-valve.json")["users"].some(u => u.name === user)) {
-            classes.push("user-valve");
-        }
-
-        if (require("../data/lists/tf-wikicap.json")["users"].some(u => u.name === user)) {
-            classes.push("user-wikicap");
-        }
-    }
-
-    // TODO: Special color for active users
-    return classes[1] ? classes[1] : classes[0];
-}

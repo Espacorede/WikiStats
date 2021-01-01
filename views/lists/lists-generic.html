@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{#unless wTheme}}
+    <meta name="theme-color" content="{{ wTheme }}">
+    {{/unless}}
+    <meta property="og:title" content="List of {{ lName }} · {{ wName }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Wiki Stats">
+    <meta property="og:description" content="List of {{ lName }}. Last updated at {{ lUpdatedAt }}.">
+    <meta name="Description" content="List of {{ lName }}. Last updated at {{ lUpdatedAt }}.">
+    <meta property="og:image" content="{{ webHost }}/images/wikis/logo-{{ wAlias }}.png">
+    <link href="{{ webHost }}/images/wikis/favicon-{{ wAlias }}.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/preprocessed/tops.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/wikis/{{ wAlias }}.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <script src="{{ webHost }}/javascript/listpage.js" type="text/javascript"></script>
+    <script src="{{ webHost }}/javascript/third_party/sorttable.js" type="text/javascript"></script>
+    <title>List of {{ lName }} - {{ wName }} | Wiki Stats</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="container text-center">
+        <div class="spacer-small"></div>
+
+        <h1 class="text-display1">
+            List of {{ lName }}
+        </h1>
+
+        <div class="text-subhead">
+            {{{ lDescription }}}
+            {{#if lGenerated}}
+            {{#if lDescription}}
+            <br>
+            {{/if}}
+            <i>This list is curated <span class="icon-heart-empty"></span> and may not be totally accurate. Feel
+                free to <a href="/about">report</a> missing users.</i>
+            {{/if}}
+            {{#if lUpdatedAt}}
+            <br>Last updated at {{ lUpdatedAt }}.
+            {{/if}}
+        </div>
+
+        <!--
+        {{#if lActive}}
+        {{#if wWikiCapList}}
+        <div class="list-curlist">
+            <span class="user-wikicap">Wiki Cap Recipient</span>
+            <span class="user-staff">Staff Member</span>
+        </div>
+        {{/if}}
+        {{^}}
+        <div class="list-curlist">
+            <span class="user-normal">Regular User</span>
+            <span class="user-bot">Bot</span>
+            {{#if wWikiCap}}
+            <span class="user-wikicap">Wiki Cap Recipient</span>
+            {{/if}}
+            <span class="user-staff">Staff Member</span>
+        </div>
+        {{/if}}-->
+
+        <div class="spacer-small"></div>
+
+        <table class="top-table sortable">
+            <thead>
+                <tr>
+                    {{#if wWikiCapList}}
+                    <th class="text-center">No.</th>
+                    {{/if}}
+                    {{#if wTop100List}}
+                    <th class="text-center">Position</th>
+                    {{/if}}
+                    <th class="text-center sorttable_alpha">User</th>
+                    <th class="text-center">Contributions</th>
+                    <th class="text-center">Contribs. per day</th>
+                    {{#if wWikiCapList}}
+                    <th class="text-center">Date received</th>
+                    {{/if}}
+                    {{#if lActive}}
+                    <th class="text-center">
+                        <span class="tooltip" title="
+                        This is defined by wiki contributions within the last 30 days.">
+                            Is active?
+                        </span>
+                    </th>
+                    {{/if}}
+                    <th class="text-center">Registration date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {{#each rUsers}}
+                <tr>
+                    {{#if ../wWikiCapList}}
+                    <td>{{ wikicap_number }}</td>
+                    {{/if}}
+                    {{#if ../wTop100List}}
+                    <td>{{ top100_position }}</td>
+                    {{/if}}
+                    <td>
+                        <a href="/user/{{ wAlias }}/{{ name }}" class="{{ class }}">{{ name }}</a>
+                    </td>
+                    <td>{{ edits }}</td>
+                    <td>{{{ editsperday }}}</td>
+                    {{#if ../wWikiCapList}}
+                    <td sorttable_customkey="{{ wikicap_receivedUnix }}">{{ wikicap_received }}</td>
+                    {{/if}}
+                    {{#if ../lActive}}
+                    <td>
+                        <span class="list-user-{{ activeClass }}">{{ active }}</span>
+                    </td>
+                    {{/if}}
+                    <td sorttable_customkey="{{ registrationUnix }}">{{ registration }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+</html>

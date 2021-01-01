@@ -1,13 +1,20 @@
-node_modules/*
+# Directories
+.vscode
+node_modules
+logs
+data
+public/css/preprocessed
 
-*.log
+# Files
+*.txt
+*.map
 
-data/*.json
-data/**/*.json
-
-data/lists/*-active.json
-data/lists/*-top100.json
-data/lists/*-wikicap.json
-
+# Individual files
 package-lock.json
 yarn.lock
+
+# Tempo
+controllers/articleController.js
+public/javascript/articlepage.js
+routes/article.js
+views/article.html

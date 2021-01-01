@@ -1,13 +1,11 @@
 /* TEAM */
 Name: Luis
-Site: https://tarkoviski.me
 Contact: luis [at] espacore.de
 
 Name: Gabriel
 Contact: gabriel [at] espacore.de
 
 /* THANKS */
-
 Name: Gabrielwoj
 Site: https://wiki.tf/User:Gabrielwoj
 

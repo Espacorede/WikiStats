@@ -1,0 +1,57 @@
+@charset "utf-8";
+
+$changelog_border: #999988;
+$changelog_background: #fafafa;
+
+.changelog-info {
+    padding-bottom: 15px;
+
+    p {
+        margin: 0;
+    }
+}
+
+.changelog-item {
+    padding-top: 1.2em;
+    padding-left: 2em;
+    position: relative;
+    border-left: 2px solid $changelog_border;
+
+    &::before {
+        content: attr(date);
+        position: absolute;
+        display: block;
+        left: 2em;
+        top: 1em;
+        font-size: 14px;
+    }
+
+    &::after {
+        content: "";
+        width: 10px;
+        height: 10px;
+        position: absolute;
+        display: block;
+        top: 1em;
+        left: -8px;
+        border: 2px solid $changelog_border;
+        border-radius: 10px;
+        background: $changelog_background;
+    }
+
+    .changelog-note {
+        p {
+            font-size: 1rem;
+            padding: 0;
+            margin: 0;
+
+            &::before {
+                content: "• ";
+            }
+        }
+    }
+
+    .changelog-commit {
+        margin-top: 10px;
+    }
+}

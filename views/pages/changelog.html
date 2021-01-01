@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#3498DB">
+    <link href="{{ webHost }}/images/wikis/favicon-tf.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="{{ webHost }}/css/preprocessed/common.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/preprocessed/changelog.css" rel="stylesheet" type="text/css" />
+    <link href="{{ webHost }}/css/third_party/fa_wikistats.css" rel="stylesheet" type="text/css" />
+    <script src="{{ webHost }}/javascript/main.js" type="text/javascript"></script>
+    <title>Changelog | Wiki Stats</title>
+</head>
+
+<body>
+
+    {{> header }}
+
+    <div class="container text-center">
+        <div class="text-left">
+            <h1 class="text-title">Changelog</h1>
+
+            <div class="text-subhead changelog-info">
+                <p>
+                    Current version: {{page.version}}
+                    (<a href="{{page.github}}">GitHub</a> &middot; <a href="{{page.gitlab}}">GitLab</a>)
+                </p>
+                <p>Server Version: {{process.version}}</p>
+                <!-- <p>Uptime: {{process.uptime}}</p> -->
+            </div>
+
+            {{#each page.changelog}}
+            <div class="changelog-item" date="{{date}}">
+                {{#if released}}
+                <p class="text-headline">Version {{version}}</p>
+                {{^}}
+                <p class="text-headline">Version {{version}}-dev &mdash; Unreleased</p>
+                {{/if}}
+
+                <div class="changelog-note">
+                    {{#each notes}}
+                    <p>{{{.}}}</p>
+                    {{/each}}
+                </div>
+
+                {{#if commit}}
+                <div class="changelog-commit">
+                    <a href="{{../page.github}}/commit/{{commit}}">View commit on GitHub</a>
+                    &middot;
+                    <a href="{{../page.gitlab}}/commit/{{commit}}">View commit on GitLab</a>
+                </div>
+                {{/if}}
+            </div>
+            {{/each}}
+        </div>
+
+        <div class="spacer"></div>
+
+    </div>
+
+</body>
+
+</html>

@@ -1,9 +1,9 @@
-/** * (c) Espacorede Project * **/
+/** ** (c) Espacorede Project ** **/
 
 const mongoose = require("mongoose");
-    
+
 const Schema = mongoose.Schema;
-    
+
 const wikiModel = new Schema({
     alias: String,
     w_name: String,

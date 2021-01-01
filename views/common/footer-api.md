@@ -1,1 +1,0 @@
-[← Wiki Stats Main Page](/)

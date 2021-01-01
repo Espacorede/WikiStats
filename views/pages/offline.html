@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#3498DB">
+    <style>
+        body {
+            font-family: "Segoe UI Light";
+            overflow: hidden;
+            background-color: #eee
+        }
+
+        .container {
+            display: flex;
+            margin-top: 2.5%
+        }
+
+        .container>.error {
+            margin: auto;
+            width: 800px
+        }
+
+        h1 {
+            font-size: 14vh
+        }
+
+        p {
+            font-size: 4vh
+        }
+
+        .link {
+            cursor: pointer;
+            color: #039be5;
+            text-decoration: none;
+            font-size: 2vh;
+        }
+
+        .offline {
+            animation: cray 2s infinite steps(8);
+        }
+
+        @keyframes cray {
+            10% {
+                font-weight: 300;
+                font-style: normal;
+                text-decoration: none;
+                text-transform: none;
+            }
+
+            20% {
+                font-weight: 500;
+                font-style: italic;
+                text-decoration: none;
+                text-transform: lowercase;
+            }
+
+            30% {
+                font-weight: 400;
+                font-style: normal;
+                text-decoration: line-through;
+                text-transform: none;
+            }
+
+            40% {
+                font-weight: 300;
+                font-style: normal;
+                text-decoration: none;
+                text-transform: none;
+            }
+
+            50% {
+                font-weight: 300;
+                font-style: italic;
+                text-decoration: underline;
+                text-transform: none;
+            }
+
+            60% {
+                font-weight: 400;
+                font-style: italic;
+                text-decoration: underline;
+                text-transform: capitalize;
+            }
+
+            70% {
+                font-weight: 300;
+                font-style: normal;
+                text-decoration: none;
+                text-transform: none;
+            }
+
+            80% {
+                font-weight: 100;
+                font-style: italic;
+                text-decoration: none;
+                text-transform: uppercase;
+            }
+        }
+    </style>
+    <title>Offline | Wiki Stats</title>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="error">
+            <h1 class="offline">Offline.</h1>
+
+            <p>
+                If you're reading this, it means we're temporarily offline, under maintenance or a meteor hit us.
+            </p>
+
+            <br><br>
+
+            <span class="link" onclick="location.reload();">
+                Refresh
+            </span>
+            <!--
+
+            or
+
+            <a class="link" href="/userstatic">
+                View cached pages
+            </a>-->
+
+
+            <br><br>
+
+            <a class="link" target="_blank" href="https://ko-fi.com/espacorede">
+                <img src="https://ko-fi.com/img/cuplogo-sm.png" height="16px"> Support Wiki Stats <small>(it's only
+                    $1!)</small>
+            </a>
+        </div>
+    </div>
+
+</body>
+
+</html>
